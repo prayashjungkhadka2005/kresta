@@ -1,0 +1,208 @@
+// packages/db/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ENUMS ────────────────────────────────────────────────────────────────────
+
+enum BrandStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+}
+
+enum CreatorKycStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum ProductApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  FRAUD_FLAGGED
+}
+
+enum PayoutMethod {
+  ESEWA
+  KHALTI
+  BANK_TRANSFER
+}
+
+enum PayoutStatus {
+  REQUESTED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// ─── MODELS ───────────────────────────────────────────────────────────────────
+
+model Brand {
+  id            String      @id @default(uuid())
+  email         String      @unique
+  passwordHash  String
+  companyName   String
+  logoUrl       String?
+  websiteUrl    String?
+  hasWebsite    Boolean     @default(false)
+  panNumber     String?     // encrypted at app layer
+  status        BrandStatus @default(PENDING)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  products      Product[]
+  orders        Order[]
+}
+
+model Creator {
+  id               String           @id @default(uuid())
+  email            String           @unique
+  passwordHash     String
+  fullName         String
+  username         String           @unique  // used in referral links
+  esewaId          String?          // encrypted
+  khaltiId         String?          // encrypted
+  bankAccount      String?          // encrypted
+  panNumber        String?          // encrypted
+  kycStatus        CreatorKycStatus @default(PENDING)
+  totalEarnings    Decimal          @default(0) @db.Decimal(12, 2)
+  availableBalance Decimal          @default(0) @db.Decimal(12, 2)
+  pendingBalance   Decimal          @default(0) @db.Decimal(12, 2)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  affiliateLinks   AffiliateLink[]
+  orders           Order[]
+  payoutRequests   PayoutRequest[]
+}
+
+model Product {
+  id             String                @id @default(uuid())
+  brandId        String
+  name           String
+  description    String?
+  price          Decimal               @db.Decimal(12, 2)
+  commissionRate Decimal               @db.Decimal(5, 2)  // e.g. 10.00 = 10%
+  imageUrl       String?
+  productUrl     String?               // null if isHosted = true
+  slug           String?               @unique  // for hosted checkout URL
+  isHosted       Boolean               @default(false)
+  status         ProductStatus         @default(DRAFT)
+  approvalStatus ProductApprovalStatus @default(PENDING)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  brand          Brand                 @relation(fields: [brandId], references: [id])
+  affiliateLinks AffiliateLink[]
+  orders         Order[]
+}
+
+model AffiliateLink {
+  id          String   @id @default(uuid())
+  creatorId   String
+  productId   String
+  refCode     String   @unique  // 8-char unique code
+  totalClicks Int      @default(0)
+  totalSales  Int      @default(0)
+  totalEarned Decimal  @default(0) @db.Decimal(12, 2)
+  createdAt   DateTime @default(now())
+
+  creator     Creator  @relation(fields: [creatorId], references: [id])
+  product     Product  @relation(fields: [productId], references: [id])
+  clicks      ClickEvent[]
+  orders      Order[]
+
+  @@unique([creatorId, productId])
+  @@index([refCode])
+}
+
+model Order {
+  id               String      @id @default(uuid())
+  affiliateLinkId  String
+  productId        String
+  brandId          String      // denormalized for fast brand queries
+  creatorId        String      // denormalized for fast creator queries
+  customerName     String?     // for hosted checkout
+  customerPhone    String?     // for hosted checkout
+  saleAmount       Decimal     @db.Decimal(12, 2)
+  commissionAmount Decimal     @db.Decimal(12, 2)
+  platformFee      Decimal     @db.Decimal(12, 2)
+  creatorEarning   Decimal     @db.Decimal(12, 2)
+  tdsAmount        Decimal     @db.Decimal(12, 2)
+  status           OrderStatus @default(PENDING)
+  confirmedAt      DateTime?
+  couponCode       String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  affiliateLink    AffiliateLink @relation(fields: [affiliateLinkId], references: [id])
+  product          Product       @relation(fields: [productId], references: [id])
+  brand            Brand         @relation(fields: [brandId], references: [id])
+  creator          Creator       @relation(fields: [creatorId], references: [id])
+
+  @@index([brandId, status])
+  @@index([creatorId, status])
+}
+
+model PayoutRequest {
+  id            String       @id @default(uuid())
+  creatorId     String
+  amount        Decimal      @db.Decimal(12, 2)
+  method        PayoutMethod
+  destinationId String       // eSewa ID / Khalti ID / bank account
+  tdsDeducted   Decimal      @db.Decimal(12, 2)
+  netAmount     Decimal      @db.Decimal(12, 2)
+  status        PayoutStatus @default(REQUESTED)
+  processedAt   DateTime?
+  txnReference  String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  creator       Creator      @relation(fields: [creatorId], references: [id])
+}
+
+model ClickEvent {
+  id              String   @id @default(uuid())
+  affiliateLinkId String
+  refCode         String
+  ipHash          String   // SHA-256 hashed IP, never raw
+  userAgent       String?
+  referrer        String?
+  cookieId        String?
+  createdAt       DateTime @default(now())
+
+  affiliateLink   AffiliateLink @relation(fields: [affiliateLinkId], references: [id])
+
+  @@index([refCode])
+  @@index([createdAt])
+  @@index([ipHash, refCode])  // for dedup queries
+}
+
+model AdminUser {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  totpSecret   String   // 2FA required for all admin accounts
+  createdAt    DateTime @default(now())
+}

@@ -1,0 +1,19 @@
+{
+  "name": "nepal-affiliate-platform",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.30.3",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "type-check": "turbo run type-check"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
+    "turbo": "latest",
+    "typescript": "^5.x"
+  }
+}

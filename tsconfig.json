@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "db": [
+                "packages/db/src"
+            ],
+            "shared": [
+                "packages/shared/src"
+            ],
+            "email": [
+                "packages/email/src"
+            ]
+        }
+    },
+    "exclude": [
+        "node_modules",
+        "dist",
+        ".next"
+    ]
+}
