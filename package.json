@@ -5,7 +5,7 @@
   "packageManager": "pnpm@10.30.3",
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
+    "dev": "lsof -i :3000 -t | xargs kill -9 2>/dev/null || true && lsof -i :3001 -t | xargs kill -9 2>/dev/null || true && turbo run dev",
     "lint": "turbo run lint",
     "test": "turbo run test",
     "type-check": "turbo run type-check"

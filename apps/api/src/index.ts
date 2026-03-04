@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import jwt from "@fastify/jwt";
 import cookie from "@fastify/cookie";
+import { ZodError } from "zod";
 import { authRoutes } from "./modules/auth/auth.routes";
 
 const fastify = Fastify({
@@ -11,14 +12,14 @@ const fastify = Fastify({
 // Extend Fastify types
 declare module "fastify" {
     interface FastifyRequest {
-        jwt: any; // Simplified for now, or use the actual type if known
+        jwt: any;
     }
 }
 
 async function bootstrap() {
     // Plugins
     await fastify.register(cors, {
-        origin: true, // In production, this should be restricted
+        origin: true,
         credentials: true,
     });
 
@@ -31,9 +32,22 @@ async function bootstrap() {
         parseOptions: {},
     });
 
-    // Decorate request with JWT for easier access in controllers
+    // Decorate request with JWT
     fastify.addHook("preHandler", async (request) => {
         request.jwt = fastify.jwt;
+    });
+
+    // Error handler for Zod validation errors
+    fastify.setErrorHandler((error, _request, reply) => {
+        if (error instanceof ZodError) {
+            return reply.status(400).send({
+                message: "Validation failed",
+                errors: error.flatten().fieldErrors,
+            });
+        }
+
+        // Default error handler
+        reply.send(error);
     });
 
     // Routes

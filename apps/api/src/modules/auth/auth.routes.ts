@@ -8,4 +8,5 @@ export async function authRoutes(fastify: FastifyInstance) {
     fastify.post("/register/creator", authController.registerCreator);
     fastify.post("/login", authController.login);
     fastify.post("/logout", authController.logout);
+    fastify.get("/me", authController.getMe);
 }

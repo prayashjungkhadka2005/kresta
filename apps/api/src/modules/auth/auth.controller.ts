@@ -1,4 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
+import "@fastify/cookie";
 import bcrypt from "bcrypt";
 import { AuthService } from "./auth.service";
 import { BrandRegisterSchema, CreatorRegisterSchema, LoginSchema } from "shared";
@@ -48,9 +49,32 @@ export class AuthController {
             path: "/",
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 60 * 60 * 24 * 7, // 7 days
         });
 
         return reply.send({ message: "Login successful", user: { id: result.user.id, email: result.user.email, role: result.type } });
+    }
+
+    async getMe(request: FastifyRequest, reply: FastifyReply) {
+        try {
+            const decoded = await request.jwtVerify() as any;
+            const result = await authService.findUserByEmail(decoded.email);
+
+            if (!result) {
+                return reply.status(401).send({ message: "User not found" });
+            }
+
+            return reply.send({
+                user: {
+                    id: result.user.id,
+                    email: result.user.email,
+                    role: result.type,
+                }
+            });
+        } catch (err) {
+            return reply.status(401).send({ message: "Not authenticated" });
+        }
     }
 
     async logout(request: FastifyRequest, reply: FastifyReply) {
