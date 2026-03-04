@@ -2,9 +2,13 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import jwt from "@fastify/jwt";
 import cookie from "@fastify/cookie";
+import multipart from "@fastify/multipart";
+import staticPlugin from "@fastify/static";
+import path from "path";
 import { ZodError } from "zod";
 import { authRoutes } from "./modules/auth/auth.routes";
 import { productRoutes } from "./modules/products/product.routes";
+import { uploadRoutes } from "./modules/upload/upload.routes";
 
 const fastify = Fastify({
     logger: true,
@@ -37,6 +41,17 @@ async function bootstrap() {
         parseOptions: {},
     });
 
+    await fastify.register(multipart, {
+        limits: {
+            fileSize: 50 * 1024 * 1024, // 50MB
+        },
+    });
+
+    await fastify.register(staticPlugin, {
+        root: path.join(__dirname, "../uploads"),
+        prefix: "/uploads/",
+    });
+
     // Decorate request with JWT
     fastify.addHook("preHandler", async (request) => {
         request.jwt = fastify.jwt;
@@ -58,6 +73,7 @@ async function bootstrap() {
     // Routes
     await fastify.register(authRoutes, { prefix: "/api/auth" });
     await fastify.register(productRoutes, { prefix: "/api/products" });
+    await fastify.register(uploadRoutes, { prefix: "/api/upload" });
 
     // Health check
     fastify.get("/health", async () => {

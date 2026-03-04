@@ -2,51 +2,73 @@ import { Product, prisma } from "db";
 import { CreateProductInput, UpdateProductInput } from "shared";
 
 export class ProductService {
-    async createProduct(brandId: string, data: CreateProductInput): Promise<Product> {
+    async createProduct(brandId: string, data: CreateProductInput): Promise<any> {
+        const { media, ...productData } = data;
+
         return prisma.product.create({
             data: {
-                ...data,
+                ...productData,
                 brandId,
-                price: data.price.toString(),
-                commissionRate: data.commissionRate.toString(),
+                price: productData.price.toString(),
+                commissionRate: productData.commissionRate.toString(),
+                media: {
+                    create: media.map(m => ({
+                        url: m.url,
+                        type: m.type as any,
+                        order: m.order
+                    }))
+                }
+            },
+            include: { media: true }
+        });
+    }
+
+    async getBrandProducts(brandId: string): Promise<any[]> {
+        return prisma.product.findMany({
+            where: { brandId, status: { not: "ARCHIVED" } },
+            include: { media: true },
+            orderBy: { createdAt: "desc" },
+        });
+    }
+
+    async getPublicProducts(): Promise<any[]> {
+        return prisma.product.findMany({
+            where: { status: "ACTIVE", approvalStatus: "APPROVED" },
+            include: {
+                brand: { select: { companyName: true, logoUrl: true } },
+                media: true
+            },
+            orderBy: { createdAt: "desc" },
+        });
+    }
+
+    async getProductById(id: string): Promise<any | null> {
+        return prisma.product.findUnique({
+            where: { id },
+            include: {
+                brand: { select: { companyName: true } },
+                media: true
             },
         });
     }
 
-    async getBrandProducts(brandId: string): Promise<Product[]> {
-        return prisma.product.findMany({
-            where: { brandId, status: { not: "ARCHIVED" } },
-            orderBy: { createdAt: "desc" },
-        });
-    }
+    async updateProduct(id: string, brandId: string, data: UpdateProductInput): Promise<any> {
+        const { media, ...productData } = data;
 
-    async getPublicProducts(): Promise<(Product & { brand: { companyName: string; logoUrl: string | null } })[]> {
-        return prisma.product.findMany({
-            where: { status: "ACTIVE", approvalStatus: "APPROVED" },
-            include: { brand: { select: { companyName: true, logoUrl: true } } },
-            orderBy: { createdAt: "desc" },
-        });
-    }
-
-    async getProductById(id: string): Promise<(Product & { brand: { companyName: string } }) | null> {
-        return prisma.product.findUnique({
-            where: { id },
-            include: { brand: { select: { companyName: true } } },
-        });
-    }
-
-    async updateProduct(id: string, brandId: string, data: UpdateProductInput): Promise<Product> {
         return prisma.product.update({
             where: { id, brandId },
             data: {
-                ...data,
-                price: data.price?.toString(),
-                commissionRate: data.commissionRate?.toString(),
+                ...productData,
+                price: productData.price?.toString(),
+                commissionRate: productData.commissionRate?.toString(),
+                // Simple media update: If media is provided, we could replace it. 
+                // For now, let's just handle the main fields.
             },
+            include: { media: true }
         });
     }
 
-    async deleteProduct(id: string, brandId: string): Promise<Product> {
+    async deleteProduct(id: string, brandId: string): Promise<any> {
         return prisma.product.update({
             where: { id, brandId },
             data: { status: "ARCHIVED" },

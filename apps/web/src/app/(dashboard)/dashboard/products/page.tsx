@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Search } from "@/components/ui/Search";
 import { toast } from "sonner";
+import Image from "next/image";
 
 interface Product {
     id: string;
@@ -15,9 +16,11 @@ interface Product {
     description?: string;
     price: string;
     commissionRate: string;
+    productUrl: string;
     status: string;
     approvalStatus: string;
     createdAt: string;
+    media: { url: string; type: "IMAGE" | "VIDEO"; order: number }[];
 }
 
 export default function BrandProductsPage() {
@@ -152,8 +155,17 @@ export default function BrandProductsPage() {
                                     <tr key={product.id} className="group hover:bg-gray-50/50 dark:hover:bg-zinc-800/20 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0">
-                                                    <Package className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
+                                                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0 overflow-hidden relative border border-gray-100 dark:border-zinc-700/50">
+                                                    {product.media && product.media.length > 0 ? (
+                                                        <Image
+                                                            src={product.media.sort((a, b) => a.order - b.order)[0].url}
+                                                            alt={product.name}
+                                                            fill
+                                                            className="object-cover"
+                                                        />
+                                                    ) : (
+                                                        <Package className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
+                                                    )}
                                                 </div>
                                                 <span className="font-bold text-gray-900 dark:text-white truncate max-w-[200px]">{product.name}</span>
                                             </div>
