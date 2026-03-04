@@ -247,6 +247,7 @@ export default function BrandProductsPage() {
                                         <td className="px-6 py-4">
                                             <StatusSelect
                                                 status={product.status as ProductStatus}
+                                                approvalStatus={product.approvalStatus}
                                                 onUpdate={(newStatus) => handleStatusUpdate(product.id, newStatus)}
                                                 isLoading={updatingStatusId === product.id}
                                             />

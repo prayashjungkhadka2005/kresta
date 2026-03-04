@@ -56,6 +56,21 @@ export class ProductService {
         const { media, ...productData } = data;
 
         return prisma.$transaction(async (tx) => {
+            // Fetch current product to check approval status
+            const existingProduct = await tx.product.findUnique({
+                where: { id, brandId },
+                select: { approvalStatus: true }
+            });
+
+            if (!existingProduct) {
+                throw new Error("Product not found");
+            }
+
+            // Enforce ACTIVE status requirement
+            if (data.status === "ACTIVE" && existingProduct.approvalStatus !== "APPROVED") {
+                throw new Error("Product must be APPROVED before it can be set to ACTIVE");
+            }
+
             // Update core product data
             const product = await tx.product.update({
                 where: { id, brandId },

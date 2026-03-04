@@ -41,16 +41,16 @@ export default function RootLayout({
           visibleToasts={3}
           swipeDirections={['top']}
           toastOptions={{
+            duration: 3000,
+            className: "font-sans",
             style: {
-              background: 'var(--background)',
-              color: 'var(--primary)',
-              border: '1px solid var(--border)',
               borderRadius: '12px',
-              fontSize: '14px',
+              fontSize: '13px',
               fontWeight: '700',
+              padding: '12px 16px',
+              border: '1px solid var(--border)',
               boxShadow: '0 20px 40px -10px rgba(0,0,0,0.05)',
             },
-            className: "font-sans",
           }}
         />
       </body>

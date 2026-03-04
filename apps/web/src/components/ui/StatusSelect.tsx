@@ -6,9 +6,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ProductStatus } from "shared";
+import { toast } from "sonner";
 
 interface StatusSelectProps {
     status: ProductStatus;
+    approvalStatus: string;
     onUpdate: (newStatus: ProductStatus) => void;
     isLoading?: boolean;
     disabled?: boolean;
@@ -23,6 +25,7 @@ const statusOptions: { label: string; value: ProductStatus; color: string }[] = 
 
 export function StatusSelect({
     status,
+    approvalStatus,
     onUpdate,
     isLoading = false,
     disabled = false,
@@ -57,6 +60,14 @@ export function StatusSelect({
     };
 
     const handleSelect = (newStatus: ProductStatus) => {
+        if (newStatus === "ACTIVE" && approvalStatus !== "APPROVED") {
+            toast.error("This product must be approved by Kresta admin before it can be activated.", {
+                id: "activation-block-toast"
+            });
+            setIsOpen(false);
+            return;
+        }
+
         if (newStatus !== status) {
             onUpdate(newStatus);
         }
