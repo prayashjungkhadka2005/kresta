@@ -31,6 +31,9 @@ const creatorLinks = [
     { label: "Payouts", href: "/creator/payouts", icon: CreditCard },
 ];
 
+import { PageTransition } from "@/components/shared/PageTransition";
+import { PageLoader } from "@/components/shared/PageLoader";
+
 export default function UnifiedDashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, isLoading } = useAuth();
     const router = useRouter();
@@ -43,8 +46,8 @@ export default function UnifiedDashboardLayout({ children }: { children: React.R
 
     if (isLoading || !user) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="w-10 h-10 border-4 border-black border-t-transparent rounded-full animate-spin" />
+            <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-black transition-colors duration-500">
+                <PageLoader />
             </div>
         );
     }
@@ -53,7 +56,9 @@ export default function UnifiedDashboardLayout({ children }: { children: React.R
 
     return (
         <DashboardShell sidebarLinks={links}>
-            {children}
+            <PageTransition>
+                {children}
+            </PageTransition>
         </DashboardShell>
     );
 }

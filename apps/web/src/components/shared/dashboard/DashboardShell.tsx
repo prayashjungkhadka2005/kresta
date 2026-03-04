@@ -35,7 +35,7 @@ export function DashboardShell({ children, sidebarLinks }: DashboardShellProps) 
 
                 {/* Page Content */}
                 <main className="flex-1 overflow-y-auto p-4 md:px-6 md:py-6 custom-scrollbar bg-transparent transition-colors">
-                    <div className="max-w-[1600px] mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <div className="max-w-[1600px] mx-auto w-full">
                         {children}
                     </div>
                 </main>
