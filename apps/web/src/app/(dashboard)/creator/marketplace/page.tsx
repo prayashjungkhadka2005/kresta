@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Filter, ShoppingBag, ArrowRight, Star, TrendingUp, Package, ChevronDown } from "lucide-react";
+import { Filter, ShoppingBag, ArrowRight, Package, ChevronDown, CheckCircle2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import { Search } from "@/components/ui/Search";
@@ -23,22 +23,30 @@ interface Product {
 
 export default function CreatorMarketplacePage() {
     const [products, setProducts] = useState<Product[]>([]);
+    const [promotedIds, setPromotedIds] = useState<Set<string>>(new Set());
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [activeTab, setActiveTab] = useState("ALL");
 
     useEffect(() => {
-        const fetchProducts = async () => {
+        const fetchAll = async () => {
             try {
-                const response = await api.get("/products");
-                setProducts(response.data.products);
+                const [productsRes, linksRes] = await Promise.all([
+                    api.get("/products"),
+                    api.get("/creators/me/links").catch(() => ({ data: { links: [] } })),
+                ]);
+                setProducts(productsRes.data.products);
+                const ids = new Set<string>(
+                    (linksRes.data.links as { product: { id: string } }[]).map(l => l.product.id)
+                );
+                setPromotedIds(ids);
             } catch (err) {
                 toast.error("Failed to fetch marketplace products");
             } finally {
                 setIsLoading(false);
             }
         };
-        fetchProducts();
+        fetchAll();
     }, []);
 
     const filteredProducts = products.filter(p =>
@@ -152,7 +160,7 @@ export default function CreatorMarketplacePage() {
                                     </div>
                                     <Link href={`/creator/marketplace/${product.id}`} className="block">
                                         <Button variant="default" className="w-full flex items-center justify-center gap-2 group/btn rounded-lg h-9 text-sm">
-                                            Promote Item
+                                            {promotedIds.has(product.id) ? "Manage Link" : "View Product"}
                                             <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-1" />
                                         </Button>
                                     </Link>

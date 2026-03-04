@@ -9,6 +9,7 @@ import { ZodError } from "zod";
 import { authRoutes } from "./modules/auth/auth.routes";
 import { productRoutes } from "./modules/products/product.routes";
 import { uploadRoutes } from "./modules/upload/upload.routes";
+import { linkRoutes } from "./modules/links/link.routes";
 
 const fastify = Fastify({
     logger: true,
@@ -82,6 +83,7 @@ async function bootstrap() {
     await fastify.register(authRoutes, { prefix: "/api/auth" });
     await fastify.register(productRoutes, { prefix: "/api/products" });
     await fastify.register(uploadRoutes, { prefix: "/api/upload" });
+    await fastify.register(linkRoutes, { prefix: "/api/creators/me/links" });
 
     // Health check
     fastify.get("/health", async () => {
