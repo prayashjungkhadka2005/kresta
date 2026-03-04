@@ -26,7 +26,7 @@ export class ProductService {
 
     async getBrandProducts(brandId: string): Promise<any[]> {
         return prisma.product.findMany({
-            where: { brandId, status: { not: "ARCHIVED" } },
+            where: { brandId },
             include: { media: true },
             orderBy: { createdAt: "desc" },
         });

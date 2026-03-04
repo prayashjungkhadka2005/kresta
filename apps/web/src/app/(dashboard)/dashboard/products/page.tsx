@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Package, Edit, Trash2, ExternalLink, Filter, ChevronDown, Info } from "lucide-react";
+import { Plus, Package, Edit, Archive, ExternalLink, Filter, ChevronDown, Info } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -33,9 +33,9 @@ export default function BrandProductsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [activeTab, setActiveTab] = useState("ALL");
 
-    // Deletion State
-    const [productToDelete, setProductToDelete] = useState<Product | null>(null);
-    const [isDeleting, setIsDeleting] = useState(false);
+    // Archive State
+    const [productToArchive, setProductToArchive] = useState<Product | null>(null);
+    const [isArchiving, setIsArchiving] = useState(false);
 
     // Status Update State
     const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
@@ -54,19 +54,19 @@ export default function BrandProductsPage() {
         fetchProducts();
     }, []);
 
-    const handleDelete = async () => {
-        if (!productToDelete) return;
+    const handleArchive = async () => {
+        if (!productToArchive) return;
 
-        setIsDeleting(true);
+        setIsArchiving(true);
         try {
-            await api.delete(`/products/${productToDelete.id}`);
-            setProducts(products.filter(p => p.id !== productToDelete.id));
-            toast.success("Product deleted successfully");
-            setProductToDelete(null);
+            await api.delete(`/products/${productToArchive.id}`);
+            setProducts(products.filter(p => p.id !== productToArchive.id));
+            toast.success("Product archived");
+            setProductToArchive(null);
         } catch (err: any) {
-            toast.error(err.response?.data?.message || "Failed to delete product");
+            toast.error(err.response?.data?.message || "Failed to archive product");
         } finally {
-            setIsDeleting(false);
+            setIsArchiving(false);
         }
     };
 
@@ -94,6 +94,7 @@ export default function BrandProductsPage() {
         switch (status) {
             case "ACTIVE": return "text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-500/10 dark:border-emerald-500/20";
             case "PAUSED": return "text-amber-700 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-500/10 dark:border-amber-500/20";
+            case "ARCHIVED": return "text-gray-500 bg-gray-50 border-gray-200 dark:text-zinc-500 dark:bg-zinc-800/50 dark:border-zinc-700/50";
             case "DRAFT": return "text-gray-700 bg-gray-50 border-gray-200 dark:text-gray-400 dark:bg-zinc-800/50 dark:border-zinc-700/50";
             default: return "text-gray-700 bg-gray-50 border-gray-200 dark:text-gray-400 dark:bg-zinc-800/50 dark:border-zinc-700/50";
         }
@@ -112,14 +113,14 @@ export default function BrandProductsPage() {
         <div className="space-y-6 max-w-7xl mx-auto w-full">
             {/* Confirmation Dialog */}
             <ConfirmDialog
-                isOpen={!!productToDelete}
-                onClose={() => setProductToDelete(null)}
-                onConfirm={handleDelete}
-                title="Delete Product"
-                description={`Are you sure you want to delete "${productToDelete?.name}"? This action cannot be undone.`}
-                confirmLabel="Delete Product"
+                isOpen={!!productToArchive}
+                onClose={() => setProductToArchive(null)}
+                onConfirm={handleArchive}
+                title="Archive Product"
+                description={`Archive "${productToArchive?.name}"? It will be hidden from the Marketplace and creators won't be able to generate new links. You can restore it anytime by changing the status back to Active.`}
+                confirmLabel="Archive Product"
                 variant="danger"
-                isLoading={isDeleting}
+                isLoading={isArchiving}
             />
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -138,7 +139,7 @@ export default function BrandProductsPage() {
             {/* Controls Row */}
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-zinc-900/50 p-4 rounded-xl border border-gray-100 dark:border-zinc-800">
                 <div className="flex items-center gap-1 bg-gray-100 dark:bg-zinc-800 p-1 rounded-lg self-start md:self-auto">
-                    {["ALL", "ACTIVE", "PAUSED", "DRAFT"].map((tab) => (
+                    {["ALL", "ACTIVE", "PAUSED", "DRAFT", "ARCHIVED"].map((tab) => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
@@ -275,13 +276,15 @@ export default function BrandProductsPage() {
                                                         <ExternalLink className="w-4 h-4" />
                                                     </button>
                                                 </Link>
-                                                <button
-                                                    title="Delete"
-                                                    onClick={() => setProductToDelete(product)}
-                                                    className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors text-gray-400 hover:text-red-600 dark:hover:text-red-400"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
+                                                {product.status !== "ARCHIVED" && (
+                                                    <button
+                                                        title="Archive"
+                                                        onClick={() => setProductToArchive(product)}
+                                                        className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                                                    >
+                                                        <Archive className="w-4 h-4" />
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>

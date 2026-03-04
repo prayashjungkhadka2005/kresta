@@ -21,6 +21,7 @@ const statusOptions: { label: string; value: ProductStatus; color: string }[] = 
     { label: "Active", value: "ACTIVE", color: "text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-500/10 dark:border-emerald-500/20" },
     { label: "Paused", value: "PAUSED", color: "text-amber-700 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-500/10 dark:border-amber-500/20" },
     { label: "Draft", value: "DRAFT", color: "text-gray-700 bg-gray-50 border-gray-200 dark:text-gray-400 dark:bg-zinc-800/50 dark:border-zinc-700/50" },
+    { label: "Archived", value: "ARCHIVED", color: "text-gray-500 bg-gray-50 border-gray-200 dark:text-zinc-500 dark:bg-zinc-800/50 dark:border-zinc-700/50" },
 ];
 
 export function StatusSelect({
@@ -82,7 +83,9 @@ export function StatusSelect({
         return () => window.removeEventListener("click", handleClickOutside);
     }, [isOpen]);
 
-    const activeOption = statusOptions.find(opt => opt.value === status) || statusOptions[2];
+    const activeOption = statusOptions.find(opt => opt.value === status) ?? { label: status, value: status as ProductStatus, color: "text-gray-500 bg-gray-50 border-gray-200 dark:text-zinc-500 dark:bg-zinc-800/50 dark:border-zinc-700/50" };
+    // For archived products, only show restore options (Draft/Active) in the dropdown, not Paused
+    const visibleOptions = status === "ARCHIVED" ? statusOptions.filter(o => o.value === "ACTIVE" || o.value === "DRAFT") : statusOptions.filter(o => o.value !== "ARCHIVED");
 
     return (
         <div className="relative inline-block">
@@ -124,7 +127,12 @@ export function StatusSelect({
                             }}
                             className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-100 dark:border-zinc-800 shadow-xl overflow-hidden p-1"
                         >
-                            {statusOptions.map((option) => (
+                            {status === "ARCHIVED" && (
+                                <div className="px-3 pt-1.5 pb-1 text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-zinc-600">
+                                    Restore to
+                                </div>
+                            )}
+                            {visibleOptions.map((option) => (
                                 <button
                                     key={option.value}
                                     onClick={(e) => {
