@@ -24,7 +24,7 @@ const brandLinks = [
 
 const creatorLinks = [
     { label: "Analytics", href: "/dashboard", icon: LayoutDashboard },
-    { label: "Marketplace", href: "/marketplace", icon: ShoppingBag },
+    { label: "Marketplace", href: "/creator/marketplace", icon: ShoppingBag },
     { label: "My Links", href: "/creator/links", icon: LinkIcon },
     { label: "Earnings", href: "/creator/earnings", icon: DollarSign },
     { label: "Payouts", href: "/creator/payouts", icon: CreditCard },
