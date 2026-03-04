@@ -12,6 +12,7 @@ import { uploadRoutes } from "./modules/upload/upload.routes";
 
 const fastify = Fastify({
     logger: true,
+    bodyLimit: 100 * 1024 * 1024, // 100MB
 });
 
 // Extend Fastify types
@@ -43,7 +44,7 @@ async function bootstrap() {
 
     await fastify.register(multipart, {
         limits: {
-            fileSize: 50 * 1024 * 1024, // 50MB
+            fileSize: 100 * 1024 * 1024, // 100MB
         },
     });
 
@@ -57,12 +58,19 @@ async function bootstrap() {
         request.jwt = fastify.jwt;
     });
 
-    // Error handler for Zod validation errors
+    // Error handler for Zod validation errors and payload limits
     fastify.setErrorHandler((error, _request, reply) => {
         if (error instanceof ZodError) {
             return reply.status(400).send({
                 message: "Validation failed",
                 errors: error.flatten().fieldErrors,
+            });
+        }
+
+        // Catch 413 (Payload Too Large) errors
+        if ((error as any).statusCode === 413 || (error as any).code === 'FST_ERR_CTP_BODY_TOO_LARGE') {
+            return reply.status(413).send({
+                message: "File too large. Maximum allowed size is 100MB.",
             });
         }
 

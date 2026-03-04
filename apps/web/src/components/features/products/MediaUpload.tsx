@@ -21,6 +21,71 @@ interface MediaUploadProps {
     disabled?: boolean;
 }
 
+function VideoPreview({ url, className }: { url: string; className?: string }) {
+    const videoRef = React.useRef<HTMLVideoElement>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [progress, setProgress] = useState(0);
+
+    const togglePlay = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (videoRef.current) {
+            if (isPlaying) {
+                videoRef.current.pause();
+            } else {
+                videoRef.current.play();
+            }
+            setIsPlaying(!isPlaying);
+        }
+    };
+
+    const handleTimeUpdate = () => {
+        if (videoRef.current) {
+            const currentProgress = (videoRef.current.currentTime / videoRef.current.duration) * 100;
+            setProgress(currentProgress);
+        }
+    };
+
+    return (
+        <div className={cn("relative w-full h-full group/video cursor-pointer", className)} onClick={togglePlay}>
+            <video
+                ref={videoRef}
+                src={url}
+                className="w-full h-full object-cover"
+                onTimeUpdate={handleTimeUpdate}
+                onContextMenu={(e) => e.preventDefault()}
+                playsInline
+                loop
+            />
+
+            {/* Play/Pause Overlay */}
+            <div className={cn(
+                "absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity duration-300",
+                isPlaying ? "opacity-0 group-hover/video:opacity-100" : "opacity-100"
+            )}>
+                <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 text-white shadow-xl">
+                    {isPlaying ? (
+                        <div className="flex gap-1">
+                            <div className="w-1 h-3 bg-current rounded-full" />
+                            <div className="w-1 h-3 bg-current rounded-full" />
+                        </div>
+                    ) : (
+                        <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-current border-b-[6px] border-b-transparent ml-1" />
+                    )}
+                </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10 overflow-hidden z-20">
+                <div
+                    className="h-full bg-white transition-all duration-100 ease-linear shadow-[0_0_10px_rgba(255,255,255,0.5)]"
+                    style={{ width: `${progress}%` }}
+                />
+            </div>
+        </div>
+    );
+}
+
 export function MediaUpload({
     value = [],
     onChange,
@@ -29,6 +94,17 @@ export function MediaUpload({
 }: MediaUploadProps) {
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState<number>(0);
+
+    const normalizeMedia = (items: MediaItem[]) => {
+        const firstImageIndex = items.findIndex((item) => item.type === "IMAGE");
+        if (firstImageIndex > 0) {
+            const normalized = [...items];
+            const [firstImage] = normalized.splice(firstImageIndex, 1);
+            normalized.unshift(firstImage);
+            return normalized.map((item, i) => ({ ...item, order: i }));
+        }
+        return items.map((item, i) => ({ ...item, order: i }));
+    };
 
     const onUpload = useCallback(
         async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,11 +116,22 @@ export function MediaUpload({
                 return;
             }
 
+            const formData = new FormData();
+            const selectedFiles = Array.from(files);
+
+            // Check if we will have at least one image for the cover
+            const hasExistingImage = value.some(item => item.type === "IMAGE");
+            const isAddingImage = selectedFiles.some(file => file.type.startsWith("image/"));
+
+            if (!hasExistingImage && !isAddingImage) {
+                toast.error("Please upload an image first to use as the product cover.");
+                return;
+            }
+
             setIsUploading(true);
             setUploadProgress(0);
 
-            const formData = new FormData();
-            Array.from(files).forEach((file) => {
+            selectedFiles.forEach((file) => {
                 formData.append("files", file);
             });
 
@@ -67,7 +154,8 @@ export function MediaUpload({
                     order: value.length + index,
                 }));
 
-                onChange([...value, ...newMedia]);
+                const finalMedia = normalizeMedia([...value, ...newMedia]);
+                onChange(finalMedia);
                 toast.success(`${newMedia.length} file(s) uploaded successfully`);
             } catch (err) {
                 console.error("Upload error:", err);
@@ -95,13 +183,20 @@ export function MediaUpload({
 
         const newValue = [...value];
         newValue.splice(index, 1);
-        const reorderedValue = newValue.map((item, i) => ({ ...item, order: i }));
-        onChange(reorderedValue);
+        onChange(normalizeMedia(newValue));
     };
 
     const handleReorder = (newOrder: MediaItem[]) => {
-        const reordered = newOrder.map((item, i) => ({ ...item, order: i }));
-        onChange(reordered);
+        const normalized = normalizeMedia(newOrder);
+
+        // Show informative toast if we had to move a video off the cover spot
+        if (newOrder[0].type === "VIDEO" && normalized[0].type === "IMAGE") {
+            toast.info("Videos cannot be the cover. An image was kept at the top.", {
+                id: "cover-restriction-toast"
+            });
+        }
+
+        onChange(normalized);
     };
 
     return (
@@ -126,10 +221,7 @@ export function MediaUpload({
                                 className="object-cover"
                             />
                         ) : (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                                <FileVideo className="w-6 h-6 text-zinc-400" />
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Video</span>
-                            </div>
+                            <VideoPreview url={item.url} />
                         )}
 
                         {/* Top Controls: Drag Handle & Delete */}
@@ -193,7 +285,7 @@ export function MediaUpload({
             {value.length > 0 && (
                 <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1 flex items-center gap-2 italic">
                     <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
-                    Drag images to reorder. The first image is your main cover.
+                    Drag to reorder. The first item must be an image (Cover).
                 </p>
             )}
         </div>

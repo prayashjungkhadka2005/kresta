@@ -49,3 +49,6 @@ coverage
 !/packages/db/prisma/migrations
 /packages/db/prisma/*.db
 /packages/db/prisma/*.db-journal
+
+# Uploads
+/apps/api/uploads
