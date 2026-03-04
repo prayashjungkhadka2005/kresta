@@ -18,7 +18,6 @@ import { useEffect } from "react";
 const brandLinks = [
     { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { label: "My Products", href: "/dashboard/products", icon: Package },
-    { label: "Campaigns", href: "/dashboard/campaigns", icon: Users },
     { label: "Orders", href: "/dashboard/orders", icon: ShoppingCart },
     { label: "Payouts", href: "/dashboard/payouts", icon: CreditCard },
 ];

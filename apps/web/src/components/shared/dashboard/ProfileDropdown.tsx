@@ -38,10 +38,7 @@ export function ProfileDropdown() {
             >
                 <div className="text-right hidden sm:block">
                     <p className="text-[13px] font-bold text-gray-900 dark:text-white leading-none transition-colors">
-                        {user?.companyName || user?.fullName || "Welcome back"}
-                    </p>
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 dark:text-zinc-500 mt-1 opacity-80 transition-colors">
-                        {user?.role ? `${user.role.charAt(0).toUpperCase() + user.role.slice(1)} Workspace` : "Dashboard"}
+                        {user?.companyName || user?.fullName}
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
