@@ -1,0 +1,203 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { Plus, Package, Edit, Trash2, ExternalLink, Search, Filter, ChevronDown } from "lucide-react";
+import { api } from "@/lib/api";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { toast } from "sonner";
+
+interface Product {
+    id: string;
+    name: string;
+    description?: string;
+    price: string;
+    commissionRate: string;
+    status: string;
+    approvalStatus: string;
+    createdAt: string;
+}
+
+export default function BrandProductsPage() {
+    const [products, setProducts] = useState<Product[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [activeTab, setActiveTab] = useState("ALL");
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const response = await api.get("/products/brand/me");
+                setProducts(response.data.products);
+            } catch (err: any) {
+                toast.error("Failed to fetch products");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchProducts();
+    }, []);
+
+    const filteredProducts = products.filter(product => {
+        const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (product.description?.toLowerCase().includes(searchQuery.toLowerCase()));
+        const matchesTab = activeTab === "ALL" || product.status === activeTab;
+        return matchesSearch && matchesTab;
+    });
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case "ACTIVE": return "text-green-700 bg-green-50 border-green-200 dark:text-green-400 dark:bg-green-500/10 dark:border-green-500/20";
+            case "PAUSED": return "text-yellow-700 bg-yellow-50 border-yellow-200 dark:text-yellow-400 dark:bg-yellow-500/10 dark:border-yellow-500/20";
+            case "DRAFT": return "text-gray-700 bg-gray-50 border-gray-200 dark:text-gray-400 dark:bg-zinc-800/50 dark:border-zinc-700/50";
+            default: return "text-gray-700 bg-gray-50 border-gray-200 dark:text-gray-400 dark:bg-zinc-800/50 dark:border-zinc-700/50";
+        }
+    };
+
+    return (
+        <div className="space-y-6 max-w-7xl mx-auto w-full">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-xl md:text-2xl font-bold tracking-tight text-gray-900 dark:text-white transition-colors">My Products</h1>
+                    <p className="text-gray-500 dark:text-zinc-500 mt-1 uppercase text-pro-label font-bold tracking-widest transition-colors">Manage your storefront and affiliate commissions.</p>
+                </div>
+                <Link href="/dashboard/products/new">
+                    <Button size="sm" className="gap-2">
+                        <Plus className="w-4 h-4" />
+                        Add Product
+                    </Button>
+                </Link>
+            </div>
+
+            {/* Controls Row */}
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-zinc-900/50 p-4 rounded-xl border border-gray-100 dark:border-zinc-800 transition-colors">
+                <div className="flex items-center gap-1 bg-gray-100 dark:bg-zinc-800 p-1 rounded-lg self-start md:self-auto">
+                    {["ALL", "ACTIVE", "PAUSED", "DRAFT"].map((tab) => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`px-4 py-1.5 text-[12px] font-bold uppercase tracking-wider rounded-md transition-all ${activeTab === tab
+                                    ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm"
+                                    : "text-gray-500 dark:text-zinc-500 hover:text-gray-900 dark:hover:text-white"
+                                }`}
+                        >
+                            {tab === "ALL" ? "All Products" : tab}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="relative flex-1 md:w-80">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Search products by name..."
+                            className="w-full bg-gray-100 dark:bg-zinc-800 border-none rounded-lg py-2 pl-10 pr-4 text-sm font-medium focus:ring-2 focus:ring-black/5 dark:focus:ring-white/5 transition-all text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-zinc-600"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+                    <Button variant="outline" size="sm" className="gap-2 border-none bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-700 dark:text-zinc-300">
+                        <Filter className="w-4 h-4" />
+                        <span>Filters</span>
+                        <ChevronDown className="w-4 h-4 opacity-50" />
+                    </Button>
+                </div>
+            </div>
+
+            {/* Product Count Indicator */}
+            {!isLoading && (
+                <div className="px-1">
+                    <p className="text-pro-label uppercase font-bold tracking-widest text-gray-400 dark:text-zinc-600">
+                        {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
+                    </p>
+                </div>
+            )}
+
+            {/* Content */}
+            {isLoading ? (
+                <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="h-16 rounded-xl bg-white dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 animate-pulse transition-colors" />
+                    ))}
+                </div>
+            ) : filteredProducts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 bg-transparent border border-dashed border-gray-200 dark:border-zinc-800 rounded-2xl">
+                    <div className="w-16 h-16 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl flex items-center justify-center mb-4 border border-gray-100 dark:border-zinc-700/50">
+                        <Package className="w-8 h-8 text-gray-400 dark:text-zinc-500" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">No products found</h3>
+                    <p className="text-gray-500 dark:text-zinc-400 mb-6">Try adjusting your search or filters to find what you're looking for.</p>
+                    {products.length === 0 && (
+                        <Link href="/dashboard/products/new">
+                            <Button size="sm" variant="outline" className="px-6 hover:bg-gray-100 dark:hover:bg-zinc-800/50 transition-colors">Add Your First Product</Button>
+                        </Link>
+                    )}
+                </div>
+            ) : (
+                <div className="bg-white dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 rounded-xl overflow-hidden transition-colors shadow-sm">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="border-b border-gray-100 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-900/50">
+                                    <th className="px-6 py-4 text-pro-label uppercase tracking-widest font-bold text-gray-500 dark:text-zinc-500">Product</th>
+                                    <th className="px-6 py-4 text-pro-label uppercase tracking-widest font-bold text-gray-500 dark:text-zinc-500">Status</th>
+                                    <th className="px-6 py-4 text-pro-label uppercase tracking-widest font-bold text-gray-500 dark:text-zinc-500">Price</th>
+                                    <th className="px-6 py-4 text-pro-label uppercase tracking-widest font-bold text-gray-500 dark:text-zinc-500">Commission</th>
+                                    <th className="px-6 py-4 text-pro-label uppercase tracking-widest font-bold text-gray-500 dark:text-zinc-500">Approval</th>
+                                    <th className="px-6 py-4 text-pro-label uppercase tracking-widest font-bold text-gray-500 dark:text-zinc-500 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
+                                {filteredProducts.map((product) => (
+                                    <tr key={product.id} className="group hover:bg-gray-50/50 dark:hover:bg-zinc-800/20 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0">
+                                                    <Package className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
+                                                </div>
+                                                <span className="font-bold text-gray-900 dark:text-white truncate max-w-[200px]">{product.name}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border ${getStatusColor(product.status)}`}>
+                                                {product.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm font-bold text-gray-900 dark:text-white">
+                                            NPR {parseFloat(product.price).toLocaleString()}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm font-bold text-gray-600 dark:text-zinc-400">
+                                            {product.commissionRate}%
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-[13px] font-bold text-gray-900 dark:text-white capitalize">
+                                                {product.approvalStatus.toLowerCase()}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex justify-end gap-2">
+                                                <button title="Edit" className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                                                    <Edit className="w-4 h-4" />
+                                                </button>
+                                                <button title="View Storefront" className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                                                    <ExternalLink className="w-4 h-4" />
+                                                </button>
+                                                <button title="Delete" className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors text-gray-400 hover:text-red-600 dark:hover:text-red-400">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+        </div>
+
+    );
+}

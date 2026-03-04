@@ -6,14 +6,31 @@ import { Loader2 } from "lucide-react";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     isLoading?: boolean;
+    variant?: "default" | "outline" | "ghost" | "danger";
+    size?: "default" | "sm" | "lg";
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, children, isLoading, disabled, ...props }, ref) => {
+    ({ className, children, isLoading, variant = "default", size = "default", disabled, ...props }, ref) => {
+        const variants = {
+            default: "bg-primary text-background hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200",
+            outline: "bg-transparent border-2 border-border-subtle text-foreground hover:bg-surface dark:border-zinc-800 dark:text-white dark:hover:bg-zinc-900",
+            ghost: "bg-transparent text-foreground hover:bg-surface-alt dark:text-white dark:hover:bg-zinc-900",
+            danger: "bg-red-500 text-white hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700",
+        };
+
+        const sizes = {
+            default: "h-11 px-8 text-sm",
+            sm: "h-9 px-4 text-[13px]",
+            lg: "h-12 px-10 text-base",
+        };
+
         return (
             <button
                 className={cn(
-                    "inline-flex h-11 items-center justify-center rounded-xl bg-black px-8 text-sm font-medium text-white transition-all hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200 dark:focus:ring-white dark:focus:ring-offset-black",
+                    "inline-flex items-center justify-center rounded-xl font-medium transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 active:scale-95",
+                    variants[variant],
+                    sizes[size],
                     className
                 )}
                 ref={ref}

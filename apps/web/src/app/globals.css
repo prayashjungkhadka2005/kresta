@@ -2,21 +2,58 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #09090b;
+  --surface: #fafafa;
+  --surface-alt: #f4f4f5;
+  --border: #e4e4e7;
+  --primary: #09090b;
+  --secondary: #71717a;
+  --muted: #a1a1aa;
 }
 
-@theme inline {
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-border-subtle: var(--border);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-muted: var(--muted);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Pro Dashboard Tokens */
+  --text-pro-ui: 13px;
+  --text-pro-ui--line-height: 1.2;
+  --text-pro-label: 11px;
+  --text-pro-label--line-height: 1.1;
+  --spacing-pro-icon: 18px;
+  --radius-pro: 10px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #09090b;
+    --foreground: #fafafa;
+    --surface: #18181b;
+    --surface-alt: #27272a;
+    --border: #27272a;
+    --primary: #fafafa;
+    --secondary: #a1a1aa;
+    --muted: #3f3f46;
   }
+}
+
+.dark {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --surface: #18181b;
+  --surface-alt: #27272a;
+  --border: #27272a;
+  --primary: #fafafa;
+  --secondary: #a1a1aa;
+  --muted: #3f3f46;
 }
 
 body {

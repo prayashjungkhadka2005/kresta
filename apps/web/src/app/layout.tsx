@@ -34,7 +34,24 @@ export default function RootLayout({
           <ToastProvider />
           {children}
         </AuthProvider>
-        <Toaster position="top-center" richColors duration={5000} visibleToasts={5} />
+        <Toaster
+          position="top-center"
+          richColors
+          expand={false}
+          theme="system"
+          toastOptions={{
+            style: {
+              background: 'var(--background)',
+              color: 'var(--primary)',
+              border: '1px solid var(--border)',
+              borderRadius: '20px',
+              fontSize: '14px',
+              fontWeight: '700',
+              boxShadow: '0 20px 40px -10px rgba(0,0,0,0.05)',
+            },
+            className: "font-sans",
+          }}
+        />
       </body>
     </html>
   );

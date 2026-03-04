@@ -7,6 +7,9 @@ interface User {
     id: string;
     email: string;
     role: "brand" | "creator";
+    fullName?: string;
+    companyName?: string;
+    logoUrl?: string;
 }
 
 interface AuthContextType {

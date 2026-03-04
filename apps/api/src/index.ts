@@ -4,6 +4,7 @@ import jwt from "@fastify/jwt";
 import cookie from "@fastify/cookie";
 import { ZodError } from "zod";
 import { authRoutes } from "./modules/auth/auth.routes";
+import { productRoutes } from "./modules/products/product.routes";
 
 const fastify = Fastify({
     logger: true,
@@ -25,6 +26,10 @@ async function bootstrap() {
 
     await fastify.register(jwt, {
         secret: process.env.JWT_SECRET || "supersecret",
+        cookie: {
+            cookieName: "token",
+            signed: false,
+        },
     });
 
     await fastify.register(cookie, {
@@ -52,6 +57,7 @@ async function bootstrap() {
 
     // Routes
     await fastify.register(authRoutes, { prefix: "/api/auth" });
+    await fastify.register(productRoutes, { prefix: "/api/products" });
 
     // Health check
     fastify.get("/health", async () => {
