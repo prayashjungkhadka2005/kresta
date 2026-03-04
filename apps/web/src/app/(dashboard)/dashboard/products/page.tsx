@@ -2,13 +2,17 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Package, Edit, Trash2, ExternalLink, Filter, ChevronDown } from "lucide-react";
+import { Plus, Package, Edit, Trash2, ExternalLink, Filter, ChevronDown, Info } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Search } from "@/components/ui/Search";
 import { toast } from "sonner";
 import Image from "next/image";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { Tooltip } from "@/components/ui/Tooltip";
+import { StatusSelect } from "@/components/ui/StatusSelect";
+import { ProductStatus } from "shared";
 
 interface Product {
     id: string;
@@ -29,6 +33,13 @@ export default function BrandProductsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [activeTab, setActiveTab] = useState("ALL");
 
+    // Deletion State
+    const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    // Status Update State
+    const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
+
     useEffect(() => {
         const fetchProducts = async () => {
             try {
@@ -43,6 +54,35 @@ export default function BrandProductsPage() {
         fetchProducts();
     }, []);
 
+    const handleDelete = async () => {
+        if (!productToDelete) return;
+
+        setIsDeleting(true);
+        try {
+            await api.delete(`/products/${productToDelete.id}`);
+            setProducts(products.filter(p => p.id !== productToDelete.id));
+            toast.success("Product deleted successfully");
+            setProductToDelete(null);
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Failed to delete product");
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const handleStatusUpdate = async (productId: string, newStatus: ProductStatus) => {
+        setUpdatingStatusId(productId);
+        try {
+            await api.patch(`/products/${productId}`, { status: newStatus });
+            setProducts(products.map(p => p.id === productId ? { ...p, status: newStatus } : p));
+            toast.success(`Product marked as ${newStatus.toLowerCase()}`);
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Failed to update status");
+        } finally {
+            setUpdatingStatusId(null);
+        }
+    };
+
     const filteredProducts = products.filter(product => {
         const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (product.description?.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -52,15 +92,35 @@ export default function BrandProductsPage() {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case "ACTIVE": return "text-green-700 bg-green-50 border-green-200 dark:text-green-400 dark:bg-green-500/10 dark:border-green-500/20";
-            case "PAUSED": return "text-yellow-700 bg-yellow-50 border-yellow-200 dark:text-yellow-400 dark:bg-yellow-500/10 dark:border-yellow-500/20";
+            case "ACTIVE": return "text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-500/10 dark:border-emerald-500/20";
+            case "PAUSED": return "text-amber-700 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-500/10 dark:border-amber-500/20";
             case "DRAFT": return "text-gray-700 bg-gray-50 border-gray-200 dark:text-gray-400 dark:bg-zinc-800/50 dark:border-zinc-700/50";
             default: return "text-gray-700 bg-gray-50 border-gray-200 dark:text-gray-400 dark:bg-zinc-800/50 dark:border-zinc-700/50";
         }
     };
 
+    const getApprovalStatusColor = (status: string) => {
+        switch (status) {
+            case "APPROVED": return "text-blue-700 bg-blue-50 border-blue-200 dark:text-blue-400 dark:bg-blue-500/10 dark:border-blue-500/20";
+            case "PENDING": return "text-amber-600 bg-amber-50 border-amber-100 dark:text-amber-500 dark:bg-amber-500/5 dark:border-amber-500/10";
+            case "REJECTED": return "text-red-700 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-500/10 dark:border-red-500/20";
+            default: return "text-gray-600 bg-gray-50 border-gray-200 dark:text-gray-400 dark:bg-zinc-800/50 dark:border-zinc-700/50";
+        }
+    };
+
     return (
         <div className="space-y-6 max-w-7xl mx-auto w-full">
+            {/* Confirmation Dialog */}
+            <ConfirmDialog
+                isOpen={!!productToDelete}
+                onClose={() => setProductToDelete(null)}
+                onConfirm={handleDelete}
+                title="Delete Product"
+                description={`Are you sure you want to delete "${productToDelete?.name}"? This action cannot be undone.`}
+                confirmLabel="Delete Product"
+                variant="danger"
+                isLoading={isDeleting}
+            />
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
@@ -143,10 +203,24 @@ export default function BrandProductsPage() {
                             <thead>
                                 <tr className="border-b border-gray-100 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-900/50">
                                     <th className="px-6 py-4 text-pro-label uppercase tracking-widest font-bold text-gray-500 dark:text-zinc-500">Product</th>
-                                    <th className="px-6 py-4 text-pro-label uppercase tracking-widest font-bold text-gray-500 dark:text-zinc-500">Status</th>
+                                    <th className="px-6 py-4">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-pro-label uppercase tracking-widest font-bold text-gray-500 dark:text-zinc-500">Status</span>
+                                            <Tooltip content="Your manual control of visibility">
+                                                <Info className="w-3.5 h-3.5 text-gray-300 dark:text-zinc-700 hover:text-gray-400 dark:hover:text-zinc-500 transition-colors cursor-help" />
+                                            </Tooltip>
+                                        </div>
+                                    </th>
                                     <th className="px-6 py-4 text-pro-label uppercase tracking-widest font-bold text-gray-500 dark:text-zinc-500">Price</th>
                                     <th className="px-6 py-4 text-pro-label uppercase tracking-widest font-bold text-gray-500 dark:text-zinc-500">Commission</th>
-                                    <th className="px-6 py-4 text-pro-label uppercase tracking-widest font-bold text-gray-500 dark:text-zinc-500">Approval</th>
+                                    <th className="px-6 py-4">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-pro-label uppercase tracking-widest font-bold text-gray-500 dark:text-zinc-500">Approval</span>
+                                            <Tooltip content="Platform verification status">
+                                                <Info className="w-3.5 h-3.5 text-gray-300 dark:text-zinc-700 hover:text-gray-400 dark:hover:text-zinc-500 transition-colors cursor-help" />
+                                            </Tooltip>
+                                        </div>
+                                    </th>
                                     <th className="px-6 py-4 text-pro-label uppercase tracking-widest font-bold text-gray-500 dark:text-zinc-500 text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -171,9 +245,11 @@ export default function BrandProductsPage() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border ${getStatusColor(product.status)}`}>
-                                                {product.status}
-                                            </span>
+                                            <StatusSelect
+                                                status={product.status as ProductStatus}
+                                                onUpdate={(newStatus) => handleStatusUpdate(product.id, newStatus)}
+                                                isLoading={updatingStatusId === product.id}
+                                            />
                                         </td>
                                         <td className="px-6 py-4 text-sm font-bold text-gray-900 dark:text-white">
                                             NPR {parseFloat(product.price).toLocaleString()}
@@ -182,8 +258,8 @@ export default function BrandProductsPage() {
                                             {product.commissionRate}%
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="text-[13px] font-bold text-gray-900 dark:text-white capitalize">
-                                                {product.approvalStatus.toLowerCase()}
+                                            <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest border ${getApprovalStatusColor(product.approvalStatus)}`}>
+                                                {product.approvalStatus}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
@@ -198,7 +274,11 @@ export default function BrandProductsPage() {
                                                         <ExternalLink className="w-4 h-4" />
                                                     </button>
                                                 </Link>
-                                                <button title="Delete" className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors text-gray-400 hover:text-red-600 dark:hover:text-red-400">
+                                                <button
+                                                    title="Delete"
+                                                    onClick={() => setProductToDelete(product)}
+                                                    className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                                                >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </div>

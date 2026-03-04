@@ -62,4 +62,19 @@ export class ProductController {
             product,
         });
     }
+
+    async deleteProduct(request: FastifyRequest, reply: FastifyReply) {
+        const user = (request as any).user;
+        const { id } = request.params as { id: string };
+
+        if (user.role !== "brand") {
+            return reply.status(403).send({ message: "Access denied" });
+        }
+
+        await productService.deleteProduct(id, user.id);
+
+        return reply.send({
+            message: "Product deleted successfully"
+        });
+    }
 }

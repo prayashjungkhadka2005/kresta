@@ -25,5 +25,6 @@ export async function productRoutes(fastify: FastifyInstance) {
         privateRoutes.post("/", productController.createProduct.bind(productController));
         privateRoutes.get("/brand/me", productController.getBrandProducts.bind(productController));
         privateRoutes.patch("/:id", productController.updateProduct.bind(productController));
+        privateRoutes.delete("/:id", productController.deleteProduct.bind(productController));
     });
 }

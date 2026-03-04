@@ -37,14 +37,15 @@ export default function RootLayout({
         <Toaster
           position="top-center"
           richColors
-          expand={false}
           theme="system"
+          visibleToasts={3}
+          swipeDirections={['top']}
           toastOptions={{
             style: {
               background: 'var(--background)',
               color: 'var(--primary)',
               border: '1px solid var(--border)',
-              borderRadius: '20px',
+              borderRadius: '12px',
               fontSize: '14px',
               fontWeight: '700',
               boxShadow: '0 20px 40px -10px rgba(0,0,0,0.05)',
