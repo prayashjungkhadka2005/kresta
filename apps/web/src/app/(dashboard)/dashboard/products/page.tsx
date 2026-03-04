@@ -270,7 +270,7 @@ export default function BrandProductsPage() {
                                                         <Edit className="w-4 h-4" />
                                                     </button>
                                                 </Link>
-                                                <Link href={`/p/${product.id}`} target="_blank">
+                                                <Link href={product.productUrl} target="_blank">
                                                     <button title="View Storefront" className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors text-gray-400 hover:text-gray-900 dark:hover:text-white">
                                                         <ExternalLink className="w-4 h-4" />
                                                     </button>

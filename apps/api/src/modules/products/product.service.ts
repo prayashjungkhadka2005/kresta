@@ -9,6 +9,7 @@ export class ProductService {
             data: {
                 ...productData,
                 brandId,
+                approvalStatus: "APPROVED",
                 price: productData.price.toString(),
                 commissionRate: productData.commissionRate.toString(),
                 media: {
