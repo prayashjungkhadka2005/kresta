@@ -2,10 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Package, Edit, Trash2, ExternalLink, Search, Filter, ChevronDown } from "lucide-react";
+import { Plus, Package, Edit, Trash2, ExternalLink, Filter, ChevronDown } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Search } from "@/components/ui/Search";
 import { toast } from "sonner";
 
 interface Product {
@@ -72,15 +73,15 @@ export default function BrandProductsPage() {
             </div>
 
             {/* Controls Row */}
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-zinc-900/50 p-4 rounded-xl border border-gray-100 dark:border-zinc-800 transition-colors">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-zinc-900/50 p-4 rounded-xl border border-gray-100 dark:border-zinc-800">
                 <div className="flex items-center gap-1 bg-gray-100 dark:bg-zinc-800 p-1 rounded-lg self-start md:self-auto">
                     {["ALL", "ACTIVE", "PAUSED", "DRAFT"].map((tab) => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={`px-4 py-1.5 text-[12px] font-bold uppercase tracking-wider rounded-md transition-all ${activeTab === tab
-                                    ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm"
-                                    : "text-gray-500 dark:text-zinc-500 hover:text-gray-900 dark:hover:text-white"
+                                ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm"
+                                : "text-gray-500 dark:text-zinc-500 hover:text-gray-900 dark:hover:text-white"
                                 }`}
                         >
                             {tab === "ALL" ? "All Products" : tab}
@@ -89,16 +90,12 @@ export default function BrandProductsPage() {
                 </div>
 
                 <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative flex-1 md:w-80">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search products by name..."
-                            className="w-full bg-gray-100 dark:bg-zinc-800 border-none rounded-lg py-2 pl-10 pr-4 text-sm font-medium focus:ring-2 focus:ring-black/5 dark:focus:ring-white/5 transition-all text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-zinc-600"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
+                    <Search
+                        placeholder="Search products by name or description..."
+                        value={searchQuery}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+                        className="bg-gray-100 dark:bg-zinc-800 border-none rounded-lg flex-1 md:w-80"
+                    />
                     <Button variant="outline" size="sm" className="gap-2 border-none bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-700 dark:text-zinc-300">
                         <Filter className="w-4 h-4" />
                         <span>Filters</span>
@@ -120,7 +117,7 @@ export default function BrandProductsPage() {
             {isLoading ? (
                 <div className="space-y-4">
                     {[1, 2, 3].map((i) => (
-                        <div key={i} className="h-16 rounded-xl bg-white dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 animate-pulse transition-colors" />
+                        <div key={i} className="h-16 rounded-xl bg-white dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 animate-pulse" />
                     ))}
                 </div>
             ) : filteredProducts.length === 0 ? (
@@ -137,7 +134,7 @@ export default function BrandProductsPage() {
                     )}
                 </div>
             ) : (
-                <div className="bg-white dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 rounded-xl overflow-hidden transition-colors shadow-sm">
+                <div className="bg-white dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>

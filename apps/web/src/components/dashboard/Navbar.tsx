@@ -1,10 +1,10 @@
 "use client";
 
 import React from "react";
-import { Menu, Search, Bell, UserCircle } from "lucide-react";
+import { Menu, Bell, UserCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { ProfileDropdown } from "./ProfileDropdown";
-import { GlobalSearch } from "./GlobalSearch";
+import { Search } from "@/components/ui/Search";
 
 interface NavbarProps {
     onMenuClick: () => void;
@@ -27,7 +27,7 @@ export function Navbar({ onMenuClick }: NavbarProps) {
 
             {/* Right: Search, Notifications & User Profile */}
             <div className="flex items-center gap-3">
-                <GlobalSearch />
+                <Search className="hidden md:flex flex-1 max-w-md mr-2" />
 
                 <button className="p-2 hover:bg-gray-50 dark:hover:bg-zinc-900 rounded-pro relative text-gray-400 hover:text-black dark:hover:text-white transition-all">
                     <Bell className="w-[18px] h-[18px]" />
