@@ -15,15 +15,15 @@ export async function productRoutes(fastify: FastifyInstance) {
     };
 
     // Public routes
-    fastify.get("/", productController.getPublicProducts);
-    fastify.get("/:id", productController.getProduct);
+    fastify.get("/", productController.getPublicProducts.bind(productController));
+    fastify.get("/:id", productController.getProduct.bind(productController));
 
     // Private routes (Brand only)
     fastify.register(async (privateRoutes) => {
         privateRoutes.addHook("preHandler", authenticate);
 
-        privateRoutes.post("/", productController.createProduct);
-        privateRoutes.get("/brand/me", productController.getBrandProducts);
-        privateRoutes.patch("/:id", productController.updateProduct);
+        privateRoutes.post("/", productController.createProduct.bind(productController));
+        privateRoutes.get("/brand/me", productController.getBrandProducts.bind(productController));
+        privateRoutes.patch("/:id", productController.updateProduct.bind(productController));
     });
 }

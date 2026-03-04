@@ -55,16 +55,39 @@ export class ProductService {
     async updateProduct(id: string, brandId: string, data: UpdateProductInput): Promise<any> {
         const { media, ...productData } = data;
 
-        return prisma.product.update({
-            where: { id, brandId },
-            data: {
-                ...productData,
-                price: productData.price?.toString(),
-                commissionRate: productData.commissionRate?.toString(),
-                // Simple media update: If media is provided, we could replace it. 
-                // For now, let's just handle the main fields.
-            },
-            include: { media: true }
+        return prisma.$transaction(async (tx) => {
+            // Update core product data
+            const product = await tx.product.update({
+                where: { id, brandId },
+                data: {
+                    ...productData,
+                    price: productData.price?.toString(),
+                    commissionRate: productData.commissionRate?.toString(),
+                }
+            });
+
+            // If media is provided, sync it
+            if (media) {
+                // Delete existing media
+                await tx.productMedia.deleteMany({
+                    where: { productId: id }
+                });
+
+                // Create new media items
+                await tx.productMedia.createMany({
+                    data: media.map(m => ({
+                        productId: id,
+                        url: m.url,
+                        type: m.type as any,
+                        order: m.order
+                    }))
+                });
+            }
+
+            return tx.product.findUnique({
+                where: { id },
+                include: { media: true }
+            });
         });
     }
 

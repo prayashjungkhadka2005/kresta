@@ -187,13 +187,17 @@ export default function BrandProductsPage() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="flex justify-end gap-2">
-                                                <button title="Edit" className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors text-gray-400 hover:text-gray-900 dark:hover:text-white">
-                                                    <Edit className="w-4 h-4" />
-                                                </button>
-                                                <button title="View Storefront" className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors text-gray-400 hover:text-gray-900 dark:hover:text-white">
-                                                    <ExternalLink className="w-4 h-4" />
-                                                </button>
+                                            <div className="flex justify-end gap-2 text-right">
+                                                <Link href={`/dashboard/products/${product.id}/edit`}>
+                                                    <button title="Edit" className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                                                        <Edit className="w-4 h-4" />
+                                                    </button>
+                                                </Link>
+                                                <Link href={`/p/${product.id}`} target="_blank">
+                                                    <button title="View Storefront" className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                                                        <ExternalLink className="w-4 h-4" />
+                                                    </button>
+                                                </Link>
                                                 <button title="Delete" className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors text-gray-400 hover:text-red-600 dark:hover:text-red-400">
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { DashboardShell } from "@/components/shared/dashboard/DashboardShell";
 import {
     LayoutDashboard,
     Package,
