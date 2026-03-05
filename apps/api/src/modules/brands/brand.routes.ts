@@ -14,7 +14,8 @@ export async function brandRoutes(fastify: FastifyInstance) {
         }
     };
 
-    // Public Profile
+    // Public Routes
+    fastify.get("/", brandController.listBrands.bind(brandController));
     fastify.get("/:slug", brandController.getBrandProfile.bind(brandController));
 
     // Private Management (Brand only)

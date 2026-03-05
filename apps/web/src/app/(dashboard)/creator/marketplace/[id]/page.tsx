@@ -5,7 +5,7 @@ import { ArrowLeft, Package, ExternalLink, Copy, Check, Zap, TrendingUp, MousePo
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -88,6 +88,7 @@ const VideoPlayer = ({ src }: { src: string }) => {
 
 export default function MarketplaceProductDetailPage() {
     const params = useParams();
+    const router = useRouter();
     const productId = params.id as string;
     const queryClient = useQueryClient();
 
@@ -149,9 +150,9 @@ export default function MarketplaceProductDetailPage() {
     if (isNotFound) {
         return (
             <div className="space-y-6 max-w-7xl mx-auto w-full pb-10">
-                <Link href="/creator/marketplace" className="inline-flex items-center text-sm font-bold text-gray-500 hover:text-gray-900 dark:text-zinc-500 dark:hover:text-white transition-colors group">
-                    <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" /> Back to Marketplace
-                </Link>
+                <button onClick={() => router.back()} className="inline-flex items-center text-sm font-bold text-gray-500 hover:text-gray-900 dark:text-zinc-500 dark:hover:text-white transition-colors group">
+                    <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" /> Back
+                </button>
                 <div className="flex flex-col items-center justify-center py-24 bg-white dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 rounded-xl">
                     <Package className="w-10 h-10 text-gray-300 dark:text-zinc-600 mb-4" />
                     <h2 className="text-lg font-bold text-gray-900 dark:text-white">Product not found</h2>
@@ -186,12 +187,12 @@ export default function MarketplaceProductDetailPage() {
     return (
         <div className="space-y-6 max-w-7xl mx-auto w-full pb-10">
             {/* Breadcrumb */}
-            <Link
-                href="/creator/marketplace"
+            <button
+                onClick={() => router.back()}
                 className="inline-flex items-center text-sm font-bold text-gray-500 hover:text-gray-900 dark:text-zinc-500 dark:hover:text-white transition-colors group"
             >
-                <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" /> Back to Marketplace
-            </Link>
+                <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" /> Back
+            </button>
 
             {/* Main Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start pt-4">

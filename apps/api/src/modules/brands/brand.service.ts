@@ -1,6 +1,35 @@
 import { prisma, Brand } from "db";
 
 export class BrandService {
+    async getAllBrands() {
+        return prisma.brand.findMany({
+            where: {
+                status: "APPROVED"
+            },
+            select: {
+                id: true,
+                companyName: true,
+                slug: true,
+                logoUrl: true,
+                bannerUrl: true,
+                bio: true,
+                _count: {
+                    select: {
+                        products: {
+                            where: {
+                                status: "ACTIVE",
+                                approvalStatus: "APPROVED"
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy: {
+                companyName: "asc"
+            }
+        });
+    }
+
     async getBrandBySlug(slug: string) {
         return prisma.brand.findUnique({
             where: { slug },

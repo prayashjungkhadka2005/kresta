@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Filter, ShoppingBag, ArrowRight, Package, ChevronDown } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import { Search } from "@/components/ui/Search";
 import Link from "next/link";
-import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
@@ -68,7 +67,7 @@ export default function CreatorMarketplacePage() {
         queryFn: async () => {
             try {
                 const response = await api.get("/creators/me/links");
-                return new Set((response.data.links as { product: { id: string } }[]).map(l => l.product.id));
+                return new Set((response.data.links as { product: { id: string } }[]).map((l: any) => l.product.id));
             } catch {
                 return new Set<string>();
             }
@@ -95,7 +94,7 @@ export default function CreatorMarketplacePage() {
             </div>
 
             {/* Controls Row */}
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-zinc-900/50 p-4 rounded-xl border border-gray-100 dark:border-zinc-800">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-zinc-900/50 p-4 rounded-xl border border-gray-100 dark:border-zinc-800 shadow-sm">
                 <div className="flex items-center gap-1 bg-gray-100 dark:bg-zinc-800 p-1 rounded-lg self-start md:self-auto">
                     {["ALL", "TRENDING", "HIGH COMMISSION"].map((tab) => (
                         <button
@@ -132,6 +131,16 @@ export default function CreatorMarketplacePage() {
                     <p className="text-pro-label uppercase font-bold tracking-widest text-gray-400 dark:text-zinc-600">
                         {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} available
                     </p>
+                    {searchQuery && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleSearchChange("")}
+                            className="text-[10px] font-bold uppercase tracking-widest text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 h-7 px-3"
+                        >
+                            Clear Filter
+                        </Button>
+                    )}
                 </div>
             )}
 
@@ -153,11 +162,13 @@ export default function CreatorMarketplacePage() {
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {filteredProducts.map((product) => (
-                        <div key={product.id} className="group flex flex-col bg-white dark:bg-zinc-900/50 rounded-xl border border-gray-100 dark:border-zinc-800 overflow-hidden transition-colors">
+                        <div key={product.id} className="group flex flex-col bg-white dark:bg-zinc-900/50 rounded-xl border border-gray-100 dark:border-zinc-800 overflow-hidden transition-all duration-300 hover:border-gray-200 dark:hover:border-zinc-700 shadow-sm">
                             {/* Image Area */}
-                            <div className="relative h-40 bg-gray-50 dark:bg-zinc-800/50 overflow-hidden border-b border-gray-100 dark:border-zinc-800">
+                            <div className="relative h-44 bg-gray-50 dark:bg-zinc-800/30 overflow-hidden border-b border-gray-100 dark:border-zinc-800">
                                 {product.media && product.media.length > 0 ? (
-                                    <img src={product.media.sort((a, b) => a.order - b.order)[0].url} alt={product.name} className="w-full h-full object-cover" />
+                                    <Link href={`/creator/marketplace/${product.id}`}>
+                                        <img src={product.media.sort((a, b) => a.order - b.order)[0].url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                    </Link>
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-gray-300 dark:text-zinc-700">
                                         <Package className="w-8 h-8" />
@@ -168,10 +179,12 @@ export default function CreatorMarketplacePage() {
                             {/* Content Area */}
                             <div className="p-4 flex-1 flex flex-col">
                                 <div className="flex items-center mb-2">
-                                    <Link href={`/b/${product.brand.slug}`} className="hover:opacity-80 transition-opacity max-w-full">
-                                        <span className="text-[10px] uppercase font-bold tracking-widest text-gray-500 dark:text-zinc-400 bg-gray-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-md border border-gray-200 dark:border-zinc-700/50 truncate block">
-                                            {product.brand.companyName}
-                                        </span>
+                                    <Link href={`/creator/brands/${product.brand.slug}`}>
+                                        <button className="hover:opacity-80 transition-opacity max-w-full text-left">
+                                            <span className="text-[10px] uppercase font-bold tracking-widest text-gray-500 dark:text-zinc-400 bg-gray-100 dark:bg-zinc-800/80 px-2.5 py-1 rounded-md border border-gray-200 dark:border-zinc-700/50 truncate block">
+                                                {product.brand.companyName}
+                                            </span>
+                                        </button>
                                     </Link>
                                 </div>
                                 <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2 leading-tight truncate">

@@ -15,6 +15,11 @@ export class BrandController {
         return { brand };
     }
 
+    async listBrands(request: FastifyRequest, reply: FastifyReply) {
+        const brands = await brandService.getAllBrands();
+        return { brands };
+    }
+
     async getMyBrand(request: FastifyRequest, reply: FastifyReply) {
         const brandId = (request.user as any).id;
         const brand = await brandService.getBrandById(brandId);

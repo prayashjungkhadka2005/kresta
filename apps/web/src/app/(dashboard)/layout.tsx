@@ -10,7 +10,8 @@ import {
     ShoppingBag,
     Link as LinkIcon,
     DollarSign,
-    Settings
+    Settings,
+    Store
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -27,6 +28,7 @@ const brandLinks = [
 const creatorLinks = [
     { label: "Analytics", href: "/dashboard", icon: LayoutDashboard },
     { label: "Marketplace", href: "/creator/marketplace", icon: ShoppingBag },
+    { label: "Partner Brands", href: "/creator/brands", icon: Store },
     { label: "My Links", href: "/creator/links", icon: LinkIcon },
     { label: "Earnings", href: "/creator/earnings", icon: DollarSign },
     { label: "Payouts", href: "/creator/payouts", icon: CreditCard },
