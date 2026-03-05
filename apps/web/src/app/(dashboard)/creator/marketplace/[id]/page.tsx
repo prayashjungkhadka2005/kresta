@@ -261,18 +261,23 @@ export default function MarketplaceProductDetailPage() {
                             <div className="space-y-4">
                                 <Link
                                     href={`/creator/brands/${product.brand.slug}`}
-                                    className="inline-flex items-center gap-2 group/brand"
+                                    className="inline-flex items-center gap-2.5 group/brand bg-gray-50/50 dark:bg-zinc-800/30 border border-zinc-100 dark:border-zinc-800/50 pl-1.5 pr-4 py-1.5 rounded-full transition-all hover:bg-gray-100 dark:hover:bg-zinc-800/50 hover:border-zinc-200 dark:hover:border-zinc-700"
                                 >
-                                    <div className="w-6 h-6 rounded-full bg-gray-50 dark:bg-zinc-800 border border-zinc-200/50 dark:border-zinc-700 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                                    <div className="w-8 h-8 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800 flex-shrink-0 flex items-center justify-center overflow-hidden shadow-sm">
                                         {product.brand.logoUrl ? (
                                             <img src={product.brand.logoUrl} alt="" className="w-full h-full object-cover" />
                                         ) : (
-                                            <Store className="w-3 h-3 text-zinc-400" />
+                                            <Store className="w-4 h-4 text-zinc-400" />
                                         )}
                                     </div>
-                                    <span className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 dark:text-zinc-400 group-hover/brand:text-black dark:group-hover/brand:text-white transition-colors">
-                                        {product.brand.companyName}
-                                    </span>
+                                    <div className="flex flex-col">
+                                        <span className="text-[9px] uppercase font-black tracking-[0.2em] text-zinc-400 dark:text-zinc-500 leading-none mb-0.5">
+                                            Partner Brand
+                                        </span>
+                                        <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 leading-none">
+                                            {product.brand.companyName}
+                                        </span>
+                                    </div>
                                 </Link>
 
                                 <h1 className="text-xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">

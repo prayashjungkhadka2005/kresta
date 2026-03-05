@@ -1,7 +1,11 @@
 "use client";
 
 import React from "react";
-import { ArrowRight, Package } from "lucide-react";
+import {
+    Store,
+    ArrowRight,
+    Package
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 
@@ -46,13 +50,21 @@ export const ProductCard = ({ product, isPromoted }: ProductCardProps) => {
 
             {/* Content Area */}
             <div className="p-4 flex-1 flex flex-col">
-                <div className="flex items-center mb-2">
-                    <Link href={`/creator/brands/${product.brand.slug}`}>
-                        <button className="hover:opacity-80 transition-opacity max-w-full text-left">
-                            <span className="text-[10px] uppercase font-bold tracking-widest text-gray-500 dark:text-zinc-400 bg-gray-100 dark:bg-zinc-800/80 px-2.5 py-1 rounded-md border border-gray-200 dark:border-zinc-700/50 truncate block">
-                                {product.brand.companyName}
-                            </span>
-                        </button>
+                <div className="flex items-center mb-3">
+                    <Link
+                        href={`/creator/brands/${product.brand.slug}`}
+                        className="group/brand inline-flex items-center gap-2 bg-gray-50/50 dark:bg-zinc-800/30 border border-zinc-100 dark:border-zinc-800/50 pl-1 pr-3 py-1 rounded-full transition-all hover:bg-gray-100 dark:hover:bg-zinc-800/50 hover:border-zinc-200 dark:hover:border-zinc-700 max-w-full"
+                    >
+                        <div className="w-5 h-5 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800 flex-shrink-0 flex items-center justify-center overflow-hidden shadow-sm transition-transform group-hover/brand:scale-110">
+                            {product.brand.logoUrl ? (
+                                <img src={product.brand.logoUrl} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                                <Store className="w-2.5 h-2.5 text-zinc-400" />
+                            )}
+                        </div>
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 group-hover/brand:text-zinc-900 dark:group-hover/brand:text-zinc-100 transition-colors truncate">
+                            {product.brand.companyName}
+                        </span>
                     </Link>
                 </div>
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2 leading-tight line-clamp-2">
