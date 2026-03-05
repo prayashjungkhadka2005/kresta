@@ -9,6 +9,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 
 interface AffiliateLink {
     id: string;
@@ -49,6 +50,7 @@ export default function CreatorLinksPage() {
         router.replace(`${pathname}?${params.toString()}`);
     };
 
+    const [linkToRemove, setLinkToRemove] = useState<AffiliateLink | null>(null);
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
     const trackerBaseUrl = process.env.NEXT_PUBLIC_TRACKER_URL || "http://localhost:3002";
@@ -71,9 +73,11 @@ export default function CreatorLinksPage() {
             queryClient.invalidateQueries({ queryKey: ["creator-links"] });
             queryClient.invalidateQueries({ queryKey: ["creator-links-ids"] }); // Sync Marketplace too
             toast.success("Link removed");
+            setLinkToRemove(null);
         },
         onError: () => {
             toast.error("Failed to remove link");
+            setLinkToRemove(null);
         },
     });
 
@@ -90,14 +94,29 @@ export default function CreatorLinksPage() {
         setTimeout(() => setCopiedId(null), 2000);
     };
 
-    const handleDelete = async (link: AffiliateLink) => {
-        const confirmed = window.confirm(`Remove your link for "${link.product.name}"? This cannot be undone.`);
-        if (!confirmed) return;
-        deleteMutation.mutate(link.id);
+    const handleDeleteClick = (link: AffiliateLink) => {
+        setLinkToRemove(link);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!linkToRemove) return;
+        deleteMutation.mutate(linkToRemove.id);
     };
 
     return (
         <div className="space-y-6 max-w-7xl mx-auto w-full pb-10">
+            {/* Confirmation Dialog */}
+            <ConfirmDialog
+                isOpen={!!linkToRemove}
+                onClose={() => setLinkToRemove(null)}
+                onConfirm={handleConfirmDelete}
+                title="Remove Affiliate Link"
+                description={`Are you sure you want to remove your link for "${linkToRemove?.product?.name}"? While your past earnings are safely stored, you will no longer be able to track new clicks or sales for this link.`}
+                confirmLabel="Remove Link"
+                variant="danger"
+                isLoading={deleteMutation.isPending}
+            />
+
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
@@ -156,104 +175,100 @@ export default function CreatorLinksPage() {
                     )}
                 </div>
             ) : (
-                <div className="space-y-3">
-                    {filteredLinks.map(link => {
-                        const coverImage = link.product.media.sort((a, b) => a.order - b.order)[0]?.url;
-                        const trackingUrl = `${trackerBaseUrl}/t/${link.refCode}`;
-                        const estEarning = (parseFloat(link.product.price) * parseFloat(link.product.commissionRate) / 100).toLocaleString();
-                        const status = link.product.status ?? "ACTIVE";
-                        const approvalStatus = link.product.approvalStatus ?? "APPROVED";
-                        const isUnavailable = status !== "ACTIVE" || approvalStatus !== "APPROVED";
+                <div className="bg-white dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse min-w-[700px]">
+                            <thead>
+                                <tr className="border-b border-gray-100 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-800/30">
+                                    <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-zinc-500 whitespace-nowrap">Product</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-zinc-500 whitespace-nowrap text-center">Status</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-zinc-500 whitespace-nowrap text-center">Clicks</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-zinc-500 whitespace-nowrap text-center">Sales</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-zinc-500 whitespace-nowrap text-right">Earned</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-zinc-500 whitespace-nowrap text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
+                                {filteredLinks.map(link => {
+                                    const coverImage = link.product.media.sort((a, b) => a.order - b.order)[0]?.url;
+                                    const isUnavailable = (link.product.status ?? "ACTIVE") !== "ACTIVE" || (link.product.approvalStatus ?? "APPROVED") !== "APPROVED";
 
-                        return (
-                            <div key={link.id} className="bg-white dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 rounded-xl overflow-hidden">
-                                <div className="flex items-stretch">
-                                    {/* Product Thumbnail */}
-                                    <div className="w-24 md:w-28 shrink-0 bg-gray-50 dark:bg-zinc-800/50 border-r border-gray-100 dark:border-zinc-800">
-                                        {coverImage ? (
-                                            <img src={coverImage} alt={link.product.name} className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <Package className="w-6 h-6 text-gray-300 dark:text-zinc-600" />
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Link Info */}
-                                    <div className="flex-1 min-w-0 p-4 flex flex-col justify-between gap-3">
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div className="min-w-0">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] uppercase font-bold tracking-widest text-gray-400 dark:text-zinc-500">
-                                                        {link.product.brand.companyName}
-                                                    </span>
-                                                    {isUnavailable && (
-                                                        <span className="shrink-0 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-zinc-500 bg-gray-100 dark:bg-zinc-800 px-2 py-0.5 rounded">
-                                                            Unavailable
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <h3 className={`text-sm font-bold leading-tight truncate mt-0.5 ${isUnavailable ? "text-gray-400 dark:text-zinc-600" : "text-gray-900 dark:text-white"}`}>
-                                                    {link.product.name}
-                                                </h3>
-                                            </div>
-                                            <div className="flex items-center gap-2 shrink-0">
-                                                {!isUnavailable && link.product.productUrl && (
-                                                    <a href={link.product.productUrl} target="_blank" rel="noopener noreferrer">
-                                                        <Button variant="outline" size="sm" className="gap-1.5 border-none bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-600 dark:text-zinc-300 h-8 text-xs">
-                                                            <ExternalLink className="w-3 h-3" />
-                                                        </Button>
-                                                    </a>
-                                                )}
-                                                <Link href={`/creator/marketplace/${link.product.id}`}>
-                                                    <Button variant="outline" size="sm" className="border-none bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-600 dark:text-zinc-300 h-8 text-xs">
-                                                        View
-                                                    </Button>
+                                    return (
+                                        <tr key={link.id} className="group hover:bg-gray-50/50 dark:hover:bg-zinc-800/20 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <Link href={`/creator/marketplace/${link.product.id}`} className="group/item flex items-center gap-4">
+                                                    <div className="w-10 h-10 shrink-0 rounded-lg bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700 overflow-hidden flex items-center justify-center transition-opacity group-hover/item:opacity-80">
+                                                        {coverImage ? (
+                                                            <img src={coverImage} alt={link.product.name} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <Package className="w-5 h-5 text-gray-200 dark:text-zinc-700" />
+                                                        )}
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-[10px] uppercase font-bold tracking-widest text-gray-400 dark:text-zinc-500 truncate mb-0.5">
+                                                            {link.product.brand.companyName}
+                                                        </p>
+                                                        <h4 className={`text-sm font-bold truncate leading-snug group-hover/item:text-black dark:group-hover/item:text-white transition-colors ${isUnavailable ? "text-gray-400 dark:text-zinc-600" : "text-gray-900 dark:text-white"}`}>
+                                                            {link.product.name}
+                                                        </h4>
+                                                    </div>
                                                 </Link>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleDelete(link)}
-                                                    disabled={deleteMutation.isPending && deleteMutation.variables === link.id}
-                                                    className="border-none bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 dark:text-red-400 h-8"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </Button>
-                                            </div>
-                                        </div>
-
-                                        {/* Stats Row */}
-                                        <div className="flex flex-wrap items-center gap-4">
-                                            {[
-                                                { label: "Clicks", value: link.totalClicks, icon: MousePointerClick },
-                                                { label: "Sales", value: link.totalSales, icon: ShoppingBag },
-                                                { label: "Earned", value: `NPR ${parseFloat(link.totalEarned).toLocaleString()}`, icon: TrendingUp },
-                                                { label: "Per Sale", value: `NPR ${estEarning}`, icon: null },
-                                            ].map(stat => (
-                                                <div key={stat.label} className="flex items-center gap-1.5">
-                                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-zinc-500">{stat.label}</span>
-                                                    <span className="text-xs font-black text-gray-900 dark:text-white">{stat.value}</span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex justify-center">
+                                                    <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest border transition-colors ${isUnavailable
+                                                        ? "text-gray-500 bg-gray-50 border-gray-200 dark:text-zinc-500 dark:bg-zinc-800/50 dark:border-zinc-700/50"
+                                                        : "text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-500/10 dark:border-emerald-500/20"
+                                                        }`}>
+                                                        {isUnavailable ? "Ended" : "Active"}
+                                                    </span>
                                                 </div>
-                                            ))}
-                                        </div>
-
-                                        {/* Tracking URL Copy */}
-                                        <div className={`flex items-center gap-2 bg-gray-50 dark:bg-zinc-800/80 border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-2 ${isUnavailable ? "opacity-40" : ""}`}>
-                                            <p className="flex-1 text-[11px] font-mono text-gray-500 dark:text-zinc-400 truncate">{trackingUrl}</p>
-                                            <button
-                                                onClick={() => !isUnavailable && handleCopy(link)}
-                                                disabled={isUnavailable}
-                                                className="shrink-0 flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-zinc-500 hover:text-gray-900 dark:hover:text-white transition-colors disabled:cursor-not-allowed"
-                                            >
-                                                {copiedId === link.id ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-                                                {copiedId === link.id ? "Copied" : "Copy"}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                <span className="text-sm font-bold text-gray-900 dark:text-white">{link.totalClicks}</span>
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                <span className="text-sm font-bold text-gray-900 dark:text-white">{link.totalSales}</span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">
+                                                    NPR {parseFloat(link.totalEarned).toLocaleString()}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center justify-end gap-2 text-right">
+                                                    <Link href={`/creator/marketplace/${link.product.id}`}>
+                                                        <button title="View Product" className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                                                            <ExternalLink className="w-4 h-4" />
+                                                        </button>
+                                                    </Link>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => !isUnavailable && handleCopy(link)}
+                                                        disabled={isUnavailable}
+                                                        className={`h-8 px-3 text-[10px] font-bold uppercase tracking-widest gap-2 bg-gray-50 dark:bg-zinc-800/50 border-none text-gray-600 dark:text-zinc-400 ${isUnavailable ? "opacity-30" : "hover:bg-gray-100 dark:hover:bg-zinc-800"}`}
+                                                    >
+                                                        {copiedId === link.id ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                                                        {copiedId === link.id ? "Copied" : "Copy Link"}
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleDeleteClick(link)}
+                                                        disabled={deleteMutation.isPending && deleteMutation.variables === link.id}
+                                                        className="h-8 w-8 p-0 border-none bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20 text-red-500 dark:text-red-400"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </Button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
         </div>

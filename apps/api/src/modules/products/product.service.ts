@@ -36,7 +36,7 @@ export class ProductService {
         return prisma.product.findMany({
             where: { status: "ACTIVE", approvalStatus: "APPROVED" },
             include: {
-                brand: { select: { companyName: true, logoUrl: true, slug: true } },
+                brand: { select: { id: true, companyName: true, logoUrl: true, slug: true } },
                 media: true
             },
             orderBy: { createdAt: "desc" },
@@ -47,7 +47,7 @@ export class ProductService {
         return prisma.product.findUnique({
             where: { id },
             include: {
-                brand: { select: { companyName: true, slug: true, logoUrl: true } },
+                brand: { select: { id: true, companyName: true, slug: true, logoUrl: true } },
                 media: true
             },
         });

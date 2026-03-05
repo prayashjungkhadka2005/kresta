@@ -4,7 +4,13 @@ export class BrandService {
     async getAllBrands() {
         return prisma.brand.findMany({
             where: {
-                status: "APPROVED"
+                status: "APPROVED",
+                products: {
+                    some: {
+                        status: "ACTIVE",
+                        approvalStatus: "APPROVED"
+                    }
+                }
             },
             select: {
                 id: true,
