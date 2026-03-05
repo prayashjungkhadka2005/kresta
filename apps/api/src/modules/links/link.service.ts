@@ -140,4 +140,40 @@ export class LinkService {
 
         await prisma.affiliateLink.delete({ where: { id: linkId } });
     }
+
+    /**
+     * Get aggregate statistics for the Creator Dashboard
+     */
+    async getCreatorStats(creatorId: string) {
+        // Total Earnings (from creator record)
+        const creator = await prisma.creator.findUnique({
+            where: { id: creatorId },
+            select: { totalEarnings: true, pendingBalance: true }
+        });
+
+        // Active Links (count)
+        const activeLinks = await prisma.affiliateLink.count({
+            where: { creatorId }
+        });
+
+        // Aggregate Clicks & Sales across all links
+        const linkAggregates = await prisma.affiliateLink.aggregate({
+            where: { creatorId },
+            _sum: { totalClicks: true, totalSales: true }
+        });
+
+        // Total Marketplace Items (global count of available products)
+        const marketplaceItems = await prisma.product.count({
+            where: { status: "ACTIVE", approvalStatus: "APPROVED" }
+        });
+
+        return {
+            totalEarnings: creator?.totalEarnings || 0,
+            pendingEarnings: creator?.pendingBalance || 0,
+            activeLinks,
+            totalClicks: linkAggregates._sum.totalClicks || 0,
+            totalSales: linkAggregates._sum.totalSales || 0,
+            marketplaceItems
+        };
+    }
 }

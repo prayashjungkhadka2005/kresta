@@ -1,6 +1,8 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 import { TrendingUp, Link as LinkIcon, ShoppingBag, Zap, DollarSign, Megaphone, ShoppingCart, Users } from "lucide-react";
 
 export default function UnifiedDashboardPage() {
@@ -55,6 +57,14 @@ function BrandOverview({ user }: { user: any }) {
 }
 
 function CreatorOverview({ user }: { user: any }) {
+    const { data: stats } = useQuery({
+        queryKey: ["creator-dashboard-stats"],
+        queryFn: async () => {
+            const res = await api.get("/creators/me/links/stats");
+            return res.data.stats;
+        }
+    });
+
     return (
         <div className="space-y-6 lg:space-y-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -72,10 +82,10 @@ function CreatorOverview({ user }: { user: any }) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
-                    { label: "Total Earnings", value: "NPR 0", trend: "+0%", icon: DollarSign, color: "text-green-600 dark:text-green-400", bgColor: "bg-green-50 dark:bg-green-500/10" },
-                    { label: "Active Links", value: "0", trend: "+0%", icon: LinkIcon, color: "text-blue-600 dark:text-blue-400", bgColor: "bg-blue-50 dark:bg-blue-500/10" },
-                    { label: "Total Clicks", value: "0", trend: "+0%", icon: Zap, color: "text-purple-600 dark:text-purple-400", bgColor: "bg-purple-50 dark:bg-purple-500/10" },
-                    { label: "Marketplace Items", value: "10+", trend: "New", icon: ShoppingBag, color: "text-orange-600 dark:text-orange-400", bgColor: "bg-orange-50 dark:bg-orange-500/10" },
+                    { label: "Total Earnings", value: `NPR ${(stats?.totalEarnings || 0).toLocaleString()}`, trend: "+0%", icon: DollarSign, color: "text-green-600 dark:text-green-400", bgColor: "bg-green-50 dark:bg-green-500/10" },
+                    { label: "Active Links", value: stats?.activeLinks || "0", trend: "+0%", icon: LinkIcon, color: "text-blue-600 dark:text-blue-400", bgColor: "bg-blue-50 dark:bg-blue-500/10" },
+                    { label: "Total Clicks", value: stats?.totalClicks || "0", trend: "+0%", icon: Zap, color: "text-purple-600 dark:text-purple-400", bgColor: "bg-purple-50 dark:bg-purple-500/10" },
+                    { label: "Marketplace Items", value: stats?.marketplaceItems || "0", trend: "Live", icon: ShoppingBag, color: "text-orange-600 dark:text-orange-400", bgColor: "bg-orange-50 dark:bg-orange-500/10" },
                 ].map((stat, i) => (
                     <div key={i} className="bg-white dark:bg-zinc-900/50 p-5 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all group">
                         <div className="flex justify-between items-start mb-3">

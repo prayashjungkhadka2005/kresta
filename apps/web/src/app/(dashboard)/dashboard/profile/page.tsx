@@ -5,7 +5,7 @@ import { BrandProfileForm } from "@/components/features/brands/BrandProfileForm"
 import { api } from "@/lib/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ExternalLink, Loader2, Store } from "lucide-react";
+import { ExternalLink, Store } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 
@@ -35,14 +35,6 @@ export default function BrandProfileSettingsPage() {
         },
     });
 
-    if (isLoading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-                <Loader2 className="w-8 h-8 animate-spin text-zinc-400" />
-                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Loading Store Profile</p>
-            </div>
-        );
-    }
 
     return (
         <div className="space-y-6 max-w-7xl mx-auto w-full pb-10">

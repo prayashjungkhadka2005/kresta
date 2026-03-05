@@ -92,14 +92,7 @@ export default function CreatorBrandDetailPage() {
 
     const avgCommission = brand?.avgCommission ?? 0;
 
-    if (isLoading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[600px] gap-4">
-                <Loader2 className="w-8 h-8 animate-spin text-zinc-400" />
-                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Loading Brand Profile</p>
-            </div>
-        );
-    }
+    if (isLoading) return null;
 
     if (error || !brand) {
         return (

@@ -78,4 +78,20 @@ export class LinkController {
             throw error;
         }
     }
+
+    async getStats(request: FastifyRequest, reply: FastifyReply) {
+        const user = (request as any).user;
+
+        if (user.role !== "creator") {
+            return reply.status(403).send({ message: "Access denied" });
+        }
+
+        try {
+            const stats = await linkService.getCreatorStats(user.id);
+            return reply.send({ stats });
+        } catch (error: any) {
+            request.log.error(error);
+            return reply.status(500).send({ message: "Failed to load creator stats" });
+        }
+    }
 }

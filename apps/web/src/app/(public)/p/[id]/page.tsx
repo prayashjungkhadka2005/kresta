@@ -34,16 +34,7 @@ export default function PublicProductPage() {
         enabled: !!productId,
     });
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 rounded-full border-2 border-zinc-200 dark:border-zinc-800 border-t-black dark:border-t-white animate-spin" />
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">Loading Experience</p>
-                </div>
-            </div>
-        );
-    }
+    if (isLoading) return null;
 
     if (error || !product) {
         return (

@@ -16,6 +16,9 @@ export async function linkRoutes(fastify: FastifyInstance) {
     // All link routes require authentication
     fastify.addHook("preHandler", authenticate);
 
+    // GET  /api/creators/me/links/stats     → creator dashboard aggregate stats
+    fastify.get("/stats", linkController.getStats.bind(linkController));
+
     // GET  /api/creators/me/links           → list all my links
     fastify.get("/", linkController.getMyLinks.bind(linkController));
 

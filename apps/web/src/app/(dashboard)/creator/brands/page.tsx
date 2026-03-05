@@ -3,7 +3,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { Loader2, Store, ArrowRight, Package, ShieldCheck, Search as SearchIcon, Filter, ChevronDown, TrendingUp } from "lucide-react";
+import { Store, ArrowRight, Package, ShieldCheck, Search as SearchIcon, Filter, ChevronDown, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Search } from "@/components/ui/Search";
 import Link from "next/link";
@@ -36,7 +36,7 @@ export default function CreatorBrandsPage() {
         basePath: "/creator/brands"
     });
 
-    const { data: brands = [], isLoading } = useQuery<Brand[]>({
+    const { data: brands = [] } = useQuery<Brand[]>({
         queryKey: ["partner-brands"],
         queryFn: async () => {
             const response = await api.get("/brands");
@@ -47,15 +47,6 @@ export default function CreatorBrandsPage() {
     const filteredBrands = brands.filter(brand =>
         brand.companyName.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-    if (isLoading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-                <Loader2 className="w-8 h-8 animate-spin text-zinc-400" />
-                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Loading Partner Brands</p>
-            </div>
-        );
-    }
 
     return (
         <div className="space-y-6 max-w-7xl mx-auto w-full pb-10">

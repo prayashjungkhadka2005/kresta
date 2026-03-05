@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { api } from "@/lib/api";
 import { ProductForm } from "@/components/features/products/ProductForm";
 import { BackButton } from "@/components/shared/ui/BackButton";
@@ -92,14 +92,7 @@ export default function EditProductPage() {
         return null;
     }
 
-    if (isLoading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-                <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
-                <p className="text-pro-label uppercase font-bold tracking-widest text-zinc-500">Loading Product...</p>
-            </div>
-        );
-    }
+    if (isLoading) return null;
 
     return (
         <div className="space-y-4 lg:space-y-5">
