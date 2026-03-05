@@ -14,6 +14,7 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { StatusSelect } from "@/components/ui/StatusSelect";
 import { ProductStatus } from "shared";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 interface Product {
     id: string;
@@ -30,8 +31,34 @@ interface Product {
 
 export default function BrandProductsPage() {
     const queryClient = useQueryClient();
-    const [searchQuery, setSearchQuery] = useState("");
-    const [activeTab, setActiveTab] = useState("ALL");
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    // Get search and tab from URL
+    const searchQuery = searchParams.get("q") || "";
+    const activeTab = searchParams.get("tab") || "ALL";
+
+    const handleTabChange = (tab: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (tab === "ALL") {
+            params.delete("tab");
+        } else {
+            params.set("tab", tab);
+        }
+        router.push(`${pathname}?${params.toString()}`);
+    };
+
+    const handleSearchChange = (query: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (!query) {
+            params.delete("q");
+        } else {
+            params.set("q", query);
+        }
+        // Use replace instead of push for search to avoid clogging history
+        router.replace(`${pathname}?${params.toString()}`);
+    };
 
     // Archive State
     const [productToArchive, setProductToArchive] = useState<Product | null>(null);
@@ -142,7 +169,7 @@ export default function BrandProductsPage() {
                     {["ALL", "ACTIVE", "PAUSED", "DRAFT", "ARCHIVED"].map((tab) => (
                         <button
                             key={tab}
-                            onClick={() => setActiveTab(tab)}
+                            onClick={() => handleTabChange(tab)}
                             className={`px-4 py-1.5 text-[12px] font-bold uppercase tracking-wider rounded-md transition-all ${activeTab === tab
                                 ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm"
                                 : "text-gray-500 dark:text-zinc-500 hover:text-gray-900 dark:hover:text-white"
@@ -157,7 +184,7 @@ export default function BrandProductsPage() {
                     <Search
                         placeholder="Search products by name or description..."
                         value={searchQuery}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchChange(e.target.value)}
                         className="bg-gray-100 dark:bg-zinc-800 border-none rounded-lg flex-1 md:w-80"
                     />
                     <Button variant="outline" size="sm" className="gap-2 border-none bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-700 dark:text-zinc-300">
@@ -266,7 +293,7 @@ export default function BrandProductsPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex justify-end gap-2 text-right">
-                                                <Link href={`/dashboard/products/${product.id}/edit`}>
+                                                <Link href={`/dashboard/products/${product.id}/edit${activeTab !== 'ALL' ? `?fromTab=${activeTab}` : ''}`}>
                                                     <button title="Edit" className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors text-gray-400 hover:text-gray-900 dark:hover:text-white">
                                                         <Edit className="w-4 h-4" />
                                                     </button>

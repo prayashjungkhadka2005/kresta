@@ -8,6 +8,7 @@ import { Search } from "@/components/ui/Search";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 interface Product {
     id: string;
@@ -23,8 +24,33 @@ interface Product {
 }
 
 export default function CreatorMarketplacePage() {
-    const [searchQuery, setSearchQuery] = useState("");
-    const [activeTab, setActiveTab] = useState("ALL");
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    // Get search and tab from URL
+    const searchQuery = searchParams.get("q") || "";
+    const activeTab = searchParams.get("tab") || "ALL";
+
+    const handleTabChange = (tab: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (tab === "ALL") {
+            params.delete("tab");
+        } else {
+            params.set("tab", tab);
+        }
+        router.push(`${pathname}?${params.toString()}`);
+    };
+
+    const handleSearchChange = (query: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (!query) {
+            params.delete("q");
+        } else {
+            params.set("q", query);
+        }
+        router.replace(`${pathname}?${params.toString()}`);
+    };
 
     // Fetch Products
     const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
@@ -73,7 +99,7 @@ export default function CreatorMarketplacePage() {
                     {["ALL", "TRENDING", "HIGH COMMISSION"].map((tab) => (
                         <button
                             key={tab}
-                            onClick={() => setActiveTab(tab)}
+                            onClick={() => handleTabChange(tab)}
                             className={`px-4 py-1.5 text-[12px] font-bold uppercase tracking-wider rounded-md transition-all ${activeTab === tab
                                 ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm"
                                 : "text-gray-500 dark:text-zinc-500 hover:text-gray-900 dark:hover:text-white"
@@ -89,7 +115,7 @@ export default function CreatorMarketplacePage() {
                         placeholder="Search brands or products..."
                         className="bg-gray-100 dark:bg-zinc-800 border-none rounded-lg flex-1 md:w-80"
                         value={searchQuery}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchChange(e.target.value)}
                     />
                     <Button variant="outline" size="sm" className="gap-2 border-none bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-700 dark:text-zinc-300">
                         <Filter className="w-4 h-4" />

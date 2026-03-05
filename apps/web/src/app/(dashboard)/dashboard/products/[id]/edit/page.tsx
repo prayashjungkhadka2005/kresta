@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { ProductForm } from "@/components/features/products/ProductForm";
@@ -27,6 +27,7 @@ interface ProductFormData {
 export default function EditProductPage() {
     const router = useRouter();
     const params = useParams();
+    const searchParams = useSearchParams();
     const productId = params.id as string;
     const queryClient = useQueryClient();
 
@@ -63,7 +64,14 @@ export default function EditProductPage() {
             toast.success("Product updated successfully!");
             queryClient.invalidateQueries({ queryKey: ["product", productId] }); // Update Detail page cache
             queryClient.invalidateQueries({ queryKey: ["brand-products"] }); // Update Products List cache
-            router.push("/dashboard/products");
+
+            // Return to the original tab if specified
+            const fromTab = searchParams.get("fromTab");
+            if (fromTab) {
+                router.push(`/dashboard/products?tab=${fromTab}`);
+            } else {
+                router.push("/dashboard/products");
+            }
             router.refresh();
         },
         onError: (err: any) => {

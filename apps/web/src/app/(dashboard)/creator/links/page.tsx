@@ -8,6 +8,7 @@ import { Search } from "@/components/ui/Search";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 interface AffiliateLink {
     id: string;
@@ -31,7 +32,23 @@ interface AffiliateLink {
 
 export default function CreatorLinksPage() {
     const queryClient = useQueryClient();
-    const [searchQuery, setSearchQuery] = useState("");
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    // Get search from URL
+    const searchQuery = searchParams.get("q") || "";
+
+    const handleSearchChange = (query: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (!query) {
+            params.delete("q");
+        } else {
+            params.set("q", query);
+        }
+        router.replace(`${pathname}?${params.toString()}`);
+    };
+
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
     const trackerBaseUrl = process.env.NEXT_PUBLIC_TRACKER_URL || "http://localhost:3002";
@@ -104,7 +121,7 @@ export default function CreatorLinksPage() {
                         placeholder="Search products or brands..."
                         className="bg-gray-100 dark:bg-zinc-800 border-none rounded-lg flex-1 md:w-80"
                         value={searchQuery}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchChange(e.target.value)}
                     />
                 </div>
                 {!isLoading && (
