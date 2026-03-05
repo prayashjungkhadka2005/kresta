@@ -71,9 +71,8 @@ export class BrandService {
                 bannerUrl: true,
                 websiteUrl: true,
                 instagramUrl: true,
-                twitterUrl: true,
+                facebookUrl: true,
                 tiktokUrl: true,
-                linkedinUrl: true,
                 products: {
                     where: {
                         status: "ACTIVE",
@@ -117,9 +116,8 @@ export class BrandService {
                 bannerUrl: data.bannerUrl,
                 websiteUrl: data.websiteUrl,
                 instagramUrl: data.instagramUrl,
-                twitterUrl: data.twitterUrl,
+                facebookUrl: data.facebookUrl,
                 tiktokUrl: data.tiktokUrl,
-                linkedinUrl: data.linkedinUrl,
             }
         });
     }

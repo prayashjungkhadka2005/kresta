@@ -5,6 +5,7 @@ import cookie from "@fastify/cookie";
 import multipart from "@fastify/multipart";
 import staticPlugin from "@fastify/static";
 import path from "path";
+import fs from "fs";
 import { ZodError } from "zod";
 import { authRoutes } from "./modules/auth/auth.routes";
 import { productRoutes } from "./modules/products/product.routes";
@@ -21,6 +22,26 @@ const fastify = Fastify({
 declare module "fastify" {
     interface FastifyRequest {
         jwt: any;
+    }
+}
+
+// Manual env loader for development
+if (process.env.NODE_ENV !== "production") {
+    try {
+        const envPath = path.resolve(process.cwd(), ".env");
+        if (fs.existsSync(envPath)) {
+            const envContent = fs.readFileSync(envPath, "utf8");
+            envContent.split("\n").forEach(line => {
+                const [key, ...values] = line.split("=");
+                if (key && values.length > 0) {
+                    const value = values.join("=").trim().replace(/^"(.*)"$/, "$1").replace(/^'(.*)'$/, "$1");
+                    process.env[key.trim()] = value;
+                }
+            });
+            console.log("Loaded .env manually. DATABASE_URL:", process.env.DATABASE_URL ? "OK" : "MISSING");
+        }
+    } catch (e) {
+        console.error("Failed to load .env manually:", e);
     }
 }
 

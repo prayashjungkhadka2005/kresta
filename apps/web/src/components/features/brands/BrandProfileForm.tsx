@@ -16,9 +16,8 @@ interface BrandProfileFormData {
     bannerUrl: string;
     websiteUrl: string;
     instagramUrl: string;
-    twitterUrl: string;
+    facebookUrl: string;
     tiktokUrl: string;
-    linkedinUrl: string;
 }
 
 interface BrandProfileFormProps {
@@ -154,16 +153,10 @@ export function BrandProfileForm({
                             onChange={(e) => setFormData({ ...formData, tiktokUrl: e.target.value })}
                         />
                         <Input
-                            label="Twitter / X URL"
-                            placeholder="https://twitter.com/yourbrand"
-                            value={formData.twitterUrl}
-                            onChange={(e) => setFormData({ ...formData, twitterUrl: e.target.value })}
-                        />
-                        <Input
-                            label="LinkedIn URL"
-                            placeholder="https://linkedin.com/company/yourbrand"
-                            value={formData.linkedinUrl}
-                            onChange={(e) => setFormData({ ...formData, linkedinUrl: e.target.value })}
+                            label="Facebook URL"
+                            placeholder="https://facebook.com/yourbrand"
+                            value={formData.facebookUrl}
+                            onChange={(e) => setFormData({ ...formData, facebookUrl: e.target.value })}
                         />
                     </div>
                 </div>

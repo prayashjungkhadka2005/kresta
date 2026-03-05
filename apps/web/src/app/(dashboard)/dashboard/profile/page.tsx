@@ -73,9 +73,8 @@ export default function BrandProfileSettingsPage() {
                     bannerUrl: data?.bannerUrl || "",
                     websiteUrl: data?.websiteUrl || "",
                     instagramUrl: data?.instagramUrl || "",
-                    twitterUrl: data?.twitterUrl || "",
+                    facebookUrl: data?.facebookUrl || "",
                     tiktokUrl: data?.tiktokUrl || "",
-                    linkedinUrl: data?.linkedinUrl || "",
                 }}
                 onSubmit={async (formData) => {
                     await updateProfileMutation.mutateAsync(formData);

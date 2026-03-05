@@ -14,7 +14,9 @@ import {
     Store,
     TrendingUp,
     ChevronDown,
-    Filter
+    Filter,
+    Facebook,
+    Music2
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
@@ -41,9 +43,8 @@ interface BrandProfile {
     bannerUrl?: string;
     websiteUrl?: string;
     instagramUrl?: string;
-    twitterUrl?: string;
+    facebookUrl?: string;
     tiktokUrl?: string;
-    linkedinUrl?: string;
     avgCommission: number;
     products: Product[];
 }
@@ -113,8 +114,8 @@ export default function CreatorBrandDetailPage() {
     const socialLinks = [
         { icon: Globe, url: brand.websiteUrl, label: "Website" },
         { icon: Instagram, url: brand.instagramUrl, label: "Instagram" },
-        { icon: Twitter, url: brand.twitterUrl, label: "Twitter" },
-        { icon: Linkedin, url: brand.linkedinUrl, label: "LinkedIn" },
+        { icon: Facebook, url: brand.facebookUrl, label: "Facebook" },
+        { icon: Music2, url: brand.tiktokUrl, label: "TikTok" },
     ].filter(link => link.url);
 
     return (
