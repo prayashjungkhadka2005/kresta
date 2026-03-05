@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { Plus, Package, Edit, Archive, ExternalLink, Filter, ChevronDown, Info } from "lucide-react";
 import { api } from "@/lib/api";
@@ -13,6 +13,7 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { StatusSelect } from "@/components/ui/StatusSelect";
 import { ProductStatus } from "shared";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface Product {
     id: string;
@@ -28,59 +29,58 @@ interface Product {
 }
 
 export default function BrandProductsPage() {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [searchQuery, setSearchQuery] = useState("");
     const [activeTab, setActiveTab] = useState("ALL");
 
     // Archive State
     const [productToArchive, setProductToArchive] = useState<Product | null>(null);
-    const [isArchiving, setIsArchiving] = useState(false);
 
-    // Status Update State
-    const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
+    // Fetch Products
+    const { data: products = [], isLoading } = useQuery<Product[]>({
+        queryKey: ["brand-products"],
+        queryFn: async () => {
+            const response = await api.get("/products/brand/me");
+            return response.data.products;
+        },
+    });
 
-    useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                const response = await api.get("/products/brand/me");
-                setProducts(response.data.products);
-            } catch (err: any) {
-                toast.error("Failed to fetch products");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchProducts();
-    }, []);
-
-    const handleArchive = async () => {
-        if (!productToArchive) return;
-
-        setIsArchiving(true);
-        try {
-            await api.delete(`/products/${productToArchive.id}`);
-            setProducts(products.filter(p => p.id !== productToArchive.id));
+    // Archive Mutation
+    const archiveMutation = useMutation({
+        mutationFn: async (productId: string) => {
+            await api.delete(`/products/${productId}`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["brand-products"] });
             toast.success("Product archived");
             setProductToArchive(null);
-        } catch (err: any) {
+        },
+        onError: (err: any) => {
             toast.error(err.response?.data?.message || "Failed to archive product");
-        } finally {
-            setIsArchiving(false);
-        }
+        },
+    });
+
+    // Status Update Mutation
+    const statusUpdateMutation = useMutation({
+        mutationFn: async ({ productId, newStatus }: { productId: string, newStatus: ProductStatus }) => {
+            await api.patch(`/products/${productId}`, { status: newStatus });
+        },
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: ["brand-products"] });
+            toast.success(`Product marked as ${variables.newStatus.toLowerCase()}`);
+        },
+        onError: (err: any) => {
+            toast.error(err.response?.data?.message || "Failed to update status");
+        },
+    });
+
+    const handleArchive = () => {
+        if (!productToArchive) return;
+        archiveMutation.mutate(productToArchive.id);
     };
 
-    const handleStatusUpdate = async (productId: string, newStatus: ProductStatus) => {
-        setUpdatingStatusId(productId);
-        try {
-            await api.patch(`/products/${productId}`, { status: newStatus });
-            setProducts(products.map(p => p.id === productId ? { ...p, status: newStatus } : p));
-            toast.success(`Product marked as ${newStatus.toLowerCase()}`);
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || "Failed to update status");
-        } finally {
-            setUpdatingStatusId(null);
-        }
+    const handleStatusUpdate = (productId: string, newStatus: ProductStatus) => {
+        statusUpdateMutation.mutate({ productId, newStatus });
     };
 
     const filteredProducts = products.filter(product => {
@@ -120,7 +120,7 @@ export default function BrandProductsPage() {
                 description={`Archive "${productToArchive?.name}"? It will be hidden from the Marketplace and creators won't be able to generate new links. You can restore it anytime by changing the status back to Active.`}
                 confirmLabel="Archive Product"
                 variant="danger"
-                isLoading={isArchiving}
+                isLoading={archiveMutation.isPending}
             />
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -250,7 +250,7 @@ export default function BrandProductsPage() {
                                                 status={product.status as ProductStatus}
                                                 approvalStatus={product.approvalStatus}
                                                 onUpdate={(newStatus) => handleStatusUpdate(product.id, newStatus)}
-                                                isLoading={updatingStatusId === product.id}
+                                                isLoading={statusUpdateMutation.isPending && statusUpdateMutation.variables?.productId === product.id}
                                             />
                                         </td>
                                         <td className="px-6 py-4 text-sm font-bold text-gray-900 dark:text-white">
@@ -295,6 +295,5 @@ export default function BrandProductsPage() {
                 </div>
             )}
         </div>
-
     );
 }

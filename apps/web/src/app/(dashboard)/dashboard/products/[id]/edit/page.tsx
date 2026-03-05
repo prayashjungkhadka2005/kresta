@@ -1,64 +1,85 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { ProductForm } from "@/components/features/products/ProductForm";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+interface MediaItem {
+    url: string;
+    type: "IMAGE" | "VIDEO";
+    order: number;
+}
+
+interface ProductFormData {
+    name: string;
+    description: string;
+    price: string;
+    commissionRate: string;
+    productUrl: string;
+    media: MediaItem[];
+}
 
 export default function EditProductPage() {
     const router = useRouter();
     const params = useParams();
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
-    const [product, setProduct] = useState<any>(null);
+    const productId = params.id as string;
+    const queryClient = useQueryClient();
 
-    useEffect(() => {
-        const fetchProduct = async () => {
-            try {
-                const response = await api.get(`/products/${params.id}`);
-                const data = response.data.product;
+    // Fetch Product Data
+    const { data: product, isLoading, error } = useQuery<ProductFormData>({
+        queryKey: ["product-edit", productId],
+        queryFn: async () => {
+            const response = await api.get(`/products/${productId}`);
+            const data = response.data.product;
 
-                // Format data for the form
-                setProduct({
-                    name: data.name,
-                    description: data.description || "",
-                    price: data.price.toString(),
-                    commissionRate: data.commissionRate.toString(),
-                    productUrl: data.productUrl,
-                    media: data.media || [],
-                });
-            } catch (err: any) {
-                toast.error("Failed to fetch product details");
-                router.push("/dashboard/products");
-            } finally {
-                setIsLoading(false);
-            }
-        };
+            // Format data for the form
+            return {
+                name: data.name,
+                description: data.description || "",
+                price: data.price.toString(),
+                commissionRate: data.commissionRate.toString(),
+                productUrl: data.productUrl || "",
+                media: data.media || [],
+            };
+        },
+        enabled: !!productId,
+    });
 
-        if (params.id) {
-            fetchProduct();
-        }
-    }, [params.id, router]);
-
-    const handleSubmit = async (formData: any) => {
-        setIsSaving(true);
-
-        try {
-            await api.patch(`/products/${params.id}`, {
+    // Update Mutation
+    const updateMutation = useMutation({
+        mutationFn: async (formData: ProductFormData) => {
+            await api.patch(`/products/${productId}`, {
                 ...formData,
                 price: parseFloat(formData.price),
                 commissionRate: parseFloat(formData.commissionRate),
             });
+        },
+        onSuccess: () => {
             toast.success("Product updated successfully!");
+            queryClient.invalidateQueries({ queryKey: ["product", productId] }); // Update Detail page cache
+            queryClient.invalidateQueries({ queryKey: ["brand-products"] }); // Update Products List cache
             router.push("/dashboard/products");
             router.refresh();
-        } finally {
-            setIsSaving(false);
+        },
+        onError: (err: any) => {
+            toast.error(err?.response?.data?.message || "Failed to update product");
         }
+    });
+
+    const handleFormSubmit = async (formData: ProductFormData) => {
+        await updateMutation.mutateAsync(formData);
     };
+
+    if (error) {
+        toast.error("Failed to fetch product details");
+        router.push("/dashboard/products");
+        return null;
+    }
 
     if (isLoading) {
         return (
@@ -90,8 +111,8 @@ export default function EditProductPage() {
             {product && (
                 <ProductForm
                     initialData={product}
-                    onSubmit={handleSubmit}
-                    isLoading={isSaving}
+                    onSubmit={handleFormSubmit}
+                    isLoading={updateMutation.isPending}
                     submitLabel="Update Product Listing"
                 />
             )}

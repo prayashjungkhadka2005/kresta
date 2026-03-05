@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
@@ -8,27 +8,21 @@ import { ShoppingCart, Share2, ShieldCheck, ChevronLeft, ChevronRight, Play, Ext
 import Image from "next/image";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
 
 export default function PublicProductPage() {
     const params = useParams();
-    const [product, setProduct] = useState<any>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const productId = params.id as string;
     const [activeMediaIndex, setActiveMediaIndex] = useState(0);
 
-    useEffect(() => {
-        const fetchProduct = async () => {
-            try {
-                const response = await api.get(`/products/${params.id}`);
-                setProduct(response.data.product);
-            } catch (err) {
-                toast.error("Product not found");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        if (params.id) fetchProduct();
-    }, [params.id]);
+    const { data: product, isLoading, error } = useQuery({
+        queryKey: ["public-product", productId],
+        queryFn: async () => {
+            const response = await api.get(`/products/${productId}`);
+            return response.data.product;
+        },
+        enabled: !!productId,
+    });
 
     if (isLoading) {
         return (
@@ -41,7 +35,7 @@ export default function PublicProductPage() {
         );
     }
 
-    if (!product) {
+    if (error || !product) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-zinc-950 p-6">
                 <Package className="w-12 h-12 text-zinc-200 mb-4" />

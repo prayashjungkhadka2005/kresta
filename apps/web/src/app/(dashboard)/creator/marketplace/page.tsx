@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Filter, ShoppingBag, ArrowRight, Package, ChevronDown, CheckCircle2 } from "lucide-react";
+import React, { useState } from "react";
+import { Filter, ShoppingBag, ArrowRight, Package, ChevronDown } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import { Search } from "@/components/ui/Search";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 
 interface Product {
     id: string;
@@ -22,32 +23,32 @@ interface Product {
 }
 
 export default function CreatorMarketplacePage() {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [promotedIds, setPromotedIds] = useState<Set<string>>(new Set());
-    const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [activeTab, setActiveTab] = useState("ALL");
 
-    useEffect(() => {
-        const fetchAll = async () => {
+    // Fetch Products
+    const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
+        queryKey: ["marketplace-products"],
+        queryFn: async () => {
+            const response = await api.get("/products");
+            return response.data.products;
+        },
+    });
+
+    // Fetch Creator Links to check promoted status
+    const { data: promotedIds = new Set<string>(), isLoading: linksLoading } = useQuery<Set<string>>({
+        queryKey: ["creator-links-ids"],
+        queryFn: async () => {
             try {
-                const [productsRes, linksRes] = await Promise.all([
-                    api.get("/products"),
-                    api.get("/creators/me/links").catch(() => ({ data: { links: [] } })),
-                ]);
-                setProducts(productsRes.data.products);
-                const ids = new Set<string>(
-                    (linksRes.data.links as { product: { id: string } }[]).map(l => l.product.id)
-                );
-                setPromotedIds(ids);
-            } catch (err) {
-                toast.error("Failed to fetch marketplace products");
-            } finally {
-                setIsLoading(false);
+                const response = await api.get("/creators/me/links");
+                return new Set((response.data.links as { product: { id: string } }[]).map(l => l.product.id));
+            } catch {
+                return new Set<string>();
             }
-        };
-        fetchAll();
-    }, []);
+        },
+    });
+
+    const isLoading = productsLoading || linksLoading;
 
     const filteredProducts = products.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link as LinkIcon, Copy, Check, ExternalLink, Package, Search as SearchIcon, Trash2, MousePointerClick, ShoppingBag, TrendingUp, ArrowRight } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import { Search } from "@/components/ui/Search";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface AffiliateLink {
     id: string;
@@ -29,27 +30,35 @@ interface AffiliateLink {
 }
 
 export default function CreatorLinksPage() {
-    const [links, setLinks] = useState<AffiliateLink[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [searchQuery, setSearchQuery] = useState("");
     const [copiedId, setCopiedId] = useState<string | null>(null);
-    const [deletingId, setDeletingId] = useState<string | null>(null);
 
     const trackerBaseUrl = process.env.NEXT_PUBLIC_TRACKER_URL || "http://localhost:3002";
 
-    useEffect(() => {
-        const fetchLinks = async () => {
-            try {
-                const response = await api.get("/creators/me/links");
-                setLinks(response.data.links);
-            } catch {
-                toast.error("Failed to fetch your links");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchLinks();
-    }, []);
+    // Fetch Links
+    const { data: links = [], isLoading } = useQuery<AffiliateLink[]>({
+        queryKey: ["creator-links"],
+        queryFn: async () => {
+            const response = await api.get("/creators/me/links");
+            return response.data.links;
+        },
+    });
+
+    // Delete Mutation
+    const deleteMutation = useMutation({
+        mutationFn: async (linkId: string) => {
+            await api.delete(`/creators/me/links/${linkId}`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["creator-links"] });
+            queryClient.invalidateQueries({ queryKey: ["creator-links-ids"] }); // Sync Marketplace too
+            toast.success("Link removed");
+        },
+        onError: () => {
+            toast.error("Failed to remove link");
+        },
+    });
 
     const filteredLinks = links.filter(l =>
         l.product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -67,17 +76,7 @@ export default function CreatorLinksPage() {
     const handleDelete = async (link: AffiliateLink) => {
         const confirmed = window.confirm(`Remove your link for "${link.product.name}"? This cannot be undone.`);
         if (!confirmed) return;
-
-        setDeletingId(link.id);
-        try {
-            await api.delete(`/creators/me/links/${link.id}`);
-            setLinks(prev => prev.filter(l => l.id !== link.id));
-            toast.success("Link removed");
-        } catch {
-            toast.error("Failed to remove link");
-        } finally {
-            setDeletingId(null);
-        }
+        deleteMutation.mutate(link.id);
     };
 
     return (
@@ -198,7 +197,7 @@ export default function CreatorLinksPage() {
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => handleDelete(link)}
-                                                    disabled={deletingId === link.id}
+                                                    disabled={deleteMutation.isPending && deleteMutation.variables === link.id}
                                                     className="border-none bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 dark:text-red-400 h-8"
                                                 >
                                                     <Trash2 className="w-3.5 h-3.5" />

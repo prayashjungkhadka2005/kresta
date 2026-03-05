@@ -23,21 +23,7 @@ interface MediaUploadProps {
 
 function VideoPreview({ url, className }: { url: string; className?: string }) {
     const videoRef = React.useRef<HTMLVideoElement>(null);
-    const [isPlaying, setIsPlaying] = useState(false);
     const [progress, setProgress] = useState(0);
-
-    const togglePlay = (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (videoRef.current) {
-            if (isPlaying) {
-                videoRef.current.pause();
-            } else {
-                videoRef.current.play();
-            }
-            setIsPlaying(!isPlaying);
-        }
-    };
 
     const handleTimeUpdate = () => {
         if (videoRef.current) {
@@ -46,8 +32,19 @@ function VideoPreview({ url, className }: { url: string; className?: string }) {
         }
     };
 
+    const handleSeek = (e: React.MouseEvent | React.TouchEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (videoRef.current) {
+            const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+            const x = ('touches' in e) ? e.touches[0].clientX - rect.left : (e as React.MouseEvent).clientX - rect.left;
+            const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+            videoRef.current.currentTime = (percentage / 100) * videoRef.current.duration;
+        }
+    };
+
     return (
-        <div className={cn("relative w-full h-full group/video cursor-pointer", className)} onClick={togglePlay}>
+        <div className={cn("relative w-full h-full group/video", className)}>
             <video
                 ref={videoRef}
                 src={url}
@@ -56,29 +53,20 @@ function VideoPreview({ url, className }: { url: string; className?: string }) {
                 onContextMenu={(e) => e.preventDefault()}
                 playsInline
                 loop
+                autoPlay
+                muted
             />
 
-            {/* Play/Pause Overlay */}
-            <div className={cn(
-                "absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity duration-300",
-                isPlaying ? "opacity-0 group-hover/video:opacity-100" : "opacity-100"
-            )}>
-                <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 text-white shadow-xl">
-                    {isPlaying ? (
-                        <div className="flex gap-1">
-                            <div className="w-1 h-3 bg-current rounded-full" />
-                            <div className="w-1 h-3 bg-current rounded-full" />
-                        </div>
-                    ) : (
-                        <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-current border-b-[6px] border-b-transparent ml-1" />
-                    )}
-                </div>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10 overflow-hidden z-20">
+            {/* Premium Minimal Progress Bar Overlay */}
+            <div
+                className="absolute inset-x-2 bottom-2 h-1 opacity-0 group-hover/video:opacity-100 transition-opacity duration-300 flex items-center cursor-pointer z-20"
+                onClick={handleSeek}
+            >
+                {/* Background Track */}
+                <div className="absolute inset-0 bg-white/20 rounded-full" />
+                {/* Progress Fill */}
                 <div
-                    className="h-full bg-white transition-all duration-100 ease-linear shadow-[0_0_10px_rgba(255,255,255,0.5)]"
+                    className="absolute top-0 left-0 h-full bg-white rounded-full pointer-events-none transition-all duration-100"
                     style={{ width: `${progress}%` }}
                 />
             </div>
