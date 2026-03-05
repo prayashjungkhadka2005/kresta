@@ -1,16 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
-import { ArrowLeft, Package, ExternalLink, Copy, Check, Zap, TrendingUp, MousePointerClick, ShoppingBag, Play, Video, ArrowRight, Store } from "lucide-react";
+import { ArrowLeft, Star, Share2, ShieldCheck, Globe, Info, MessageCircle, Package, ExternalLink, ChevronRight, Store, Copy, Check, Zap, TrendingUp, MousePointerClick, ShoppingBag, Play, Video, ArrowRight } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
+import { Tooltip } from "@/components/ui/Tooltip";
+import { BackButton } from "@/components/shared/ui/BackButton";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { RelatedProducts } from "@/components/features/products/RelatedProducts";
-import { Tooltip } from "@/components/ui/Tooltip";
-import { Info } from "lucide-react";
 
 interface Product {
     id: string;
@@ -158,9 +158,7 @@ export default function MarketplaceProductDetailPage() {
     if (isNotFound) {
         return (
             <div className="space-y-6 max-w-7xl mx-auto w-full pb-10">
-                <button onClick={() => router.back()} className="inline-flex items-center text-sm font-bold text-gray-500 hover:text-gray-900 dark:text-zinc-500 dark:hover:text-white transition-colors group">
-                    <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" /> Back
-                </button>
+                <BackButton fallbackHref="/creator/marketplace" />
                 <div className="flex flex-col items-center justify-center py-24 bg-white dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 rounded-xl">
                     <Package className="w-10 h-10 text-gray-300 dark:text-zinc-600 mb-4" />
                     <h2 className="text-lg font-bold text-gray-900 dark:text-white">Product not found</h2>
@@ -195,12 +193,9 @@ export default function MarketplaceProductDetailPage() {
     return (
         <div className="space-y-6 max-w-7xl mx-auto w-full pb-10">
             {/* Breadcrumb */}
-            <button
-                onClick={() => router.back()}
-                className="inline-flex items-center text-sm font-bold text-gray-500 hover:text-gray-900 dark:text-zinc-500 dark:hover:text-white transition-colors group"
-            >
-                <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" /> Back
-            </button>
+            <BackButton
+                fallbackHref="/creator/marketplace"
+            />
 
             {/* Main Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-4">

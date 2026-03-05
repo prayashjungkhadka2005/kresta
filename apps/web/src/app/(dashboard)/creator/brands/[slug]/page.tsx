@@ -24,6 +24,7 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import { Search } from "@/components/ui/Search";
 import { ProductCard } from "@/components/features/products/ProductCard";
+import { BackButton } from "@/components/shared/ui/BackButton";
 
 interface Product {
     id: string;
@@ -122,12 +123,10 @@ export default function CreatorBrandDetailPage() {
         <div className="max-w-7xl mx-auto w-full pb-20 space-y-8">
             {/* Top Navigation */}
             <div className="flex items-center justify-between">
-                <Link href="/creator/brands">
-                    <Button variant="ghost" size="sm" className="gap-2 -ml-2 text-gray-500 hover:text-gray-900 dark:hover:text-white group">
-                        <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-                        <span className="text-[11px] font-bold uppercase tracking-widest">Directory</span>
-                    </Button>
-                </Link>
+                <BackButton
+                    fallbackHref="/creator/brands"
+                    label="Directory"
+                />
             </div>
 
             {/* Profile Header Block */}
@@ -264,6 +263,7 @@ export default function CreatorBrandDetailPage() {
                                     }
                                 }}
                                 isPromoted={promotedIds.has(product.id)}
+                                returnTo={`/creator/brands/${brand.slug}`}
                             />
                         ))}
                     </div>

@@ -167,6 +167,7 @@ export default function CreatorMarketplacePage() {
                             key={product.id}
                             product={product}
                             isPromoted={promotedIds.has(product.id)}
+                            returnTo={`${pathname}?${searchParams.toString()}`}
                         />
                     ))}
                 </div>

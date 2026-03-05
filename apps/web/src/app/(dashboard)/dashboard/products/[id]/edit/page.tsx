@@ -5,6 +5,7 @@ import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { ProductForm } from "@/components/features/products/ProductForm";
+import { BackButton } from "@/components/shared/ui/BackButton";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -67,11 +68,13 @@ export default function EditProductPage() {
 
             // Return to the original tab if specified
             const fromTab = searchParams.get("fromTab");
-            if (fromTab) {
-                router.push(`/dashboard/products?tab=${fromTab}`);
-            } else {
-                router.push("/dashboard/products");
-            }
+            const q = searchParams.get("q");
+            const params = new URLSearchParams();
+            if (fromTab) params.set("tab", fromTab);
+            if (q) params.set("q", q);
+
+            const queryString = params.toString();
+            router.push(`/dashboard/products${queryString ? `?${queryString}` : ""}`);
             router.refresh();
         },
         onError: (err: any) => {
@@ -101,10 +104,10 @@ export default function EditProductPage() {
     return (
         <div className="space-y-4 lg:space-y-5">
             {/* Navigation */}
-            <Link href="/dashboard/products" className="inline-flex items-center text-sm font-bold text-gray-500 hover:text-gray-900 dark:text-zinc-500 dark:hover:text-white transition-colors group">
-                <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" />
-                Back to Products
-            </Link>
+            <BackButton
+                fallbackHref="/dashboard/products"
+                label="Back to Products"
+            />
 
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">

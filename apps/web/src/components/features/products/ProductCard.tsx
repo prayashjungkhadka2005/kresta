@@ -26,15 +26,21 @@ interface Product {
 interface ProductCardProps {
     product: Product;
     isPromoted?: boolean;
+    returnTo?: string;
 }
 
-export const ProductCard = ({ product, isPromoted }: ProductCardProps) => {
+export const ProductCard = ({ product, isPromoted, returnTo }: ProductCardProps) => {
+    // Construct the detail URL with context if provided
+    const detailUrl = returnTo
+        ? `/creator/marketplace/${product.id}?from=${encodeURIComponent(returnTo)}`
+        : `/creator/marketplace/${product.id}`;
+
     return (
         <div className="group flex flex-col bg-white dark:bg-zinc-900/50 rounded-xl border border-gray-100 dark:border-zinc-800 overflow-hidden transition-all duration-300 hover:border-gray-200 dark:hover:border-zinc-700 shadow-sm h-full">
             {/* Image Area */}
             <div className="relative h-44 bg-gray-50 dark:bg-zinc-800/30 overflow-hidden border-b border-gray-100 dark:border-zinc-800">
                 {product.media && product.media.length > 0 ? (
-                    <Link href={`/creator/marketplace/${product.id}`}>
+                    <Link href={detailUrl}>
                         <img
                             src={product.media.sort((a, b) => a.order - b.order)[0].url}
                             alt={product.name}
@@ -81,7 +87,7 @@ export const ProductCard = ({ product, isPromoted }: ProductCardProps) => {
                             NPR {(parseFloat(product.price) * parseFloat(product.commissionRate) / 100).toLocaleString()}
                         </span>
                     </div>
-                    <Link href={`/creator/marketplace/${product.id}`} className="block">
+                    <Link href={detailUrl} className="block">
                         <Button variant="default" className="w-full flex items-center justify-center gap-2 group/btn rounded-lg h-9 text-sm">
                             {isPromoted ? "Manage Link" : "View Product"}
                             <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-1" />

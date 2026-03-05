@@ -5,11 +5,14 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { ProductForm } from "@/components/features/products/ProductForm";
+import { BackButton } from "@/components/shared/ui/BackButton";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 export default function NewProductPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = async (formData: any) => {
@@ -22,7 +25,16 @@ export default function NewProductPage() {
                 commissionRate: parseFloat(formData.commissionRate),
             });
             toast.success("Product created successfully!");
-            router.push("/dashboard/products");
+
+            // Return with context
+            const fromTab = searchParams.get("fromTab");
+            const q = searchParams.get("q");
+            const params = new URLSearchParams();
+            if (fromTab) params.set("tab", fromTab);
+            if (q) params.set("q", q);
+
+            const queryString = params.toString();
+            router.push(`/dashboard/products${queryString ? `?${queryString}` : ""}`);
             router.refresh();
         } finally {
             setIsLoading(false);
@@ -32,10 +44,10 @@ export default function NewProductPage() {
     return (
         <div className="space-y-4 lg:space-y-5">
             {/* Navigation */}
-            <Link href="/dashboard/products" className="inline-flex items-center text-sm font-bold text-gray-500 hover:text-gray-900 dark:text-zinc-500 dark:hover:text-white transition-colors group">
-                <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" />
-                Back to Products
-            </Link>
+            <BackButton
+                fallbackHref="/dashboard/products"
+                label="Back to Products"
+            />
 
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">

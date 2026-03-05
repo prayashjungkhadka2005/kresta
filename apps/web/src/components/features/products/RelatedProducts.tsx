@@ -6,6 +6,8 @@ import { api } from "@/lib/api";
 import { ProductCard } from "./ProductCard";
 import { ShoppingBag } from "lucide-react";
 
+import { usePathname } from "next/navigation";
+
 interface RelatedProductsProps {
     currentProductId: string;
     brandId: string;
@@ -13,6 +15,7 @@ interface RelatedProductsProps {
 }
 
 export const RelatedProducts = ({ currentProductId, brandId, brandName }: RelatedProductsProps) => {
+    const pathname = usePathname();
     const { data: allProducts = [], isLoading } = useQuery({
         queryKey: ["marketplace-products-discovery"],
         queryFn: async () => {
@@ -78,6 +81,7 @@ export const RelatedProducts = ({ currentProductId, brandId, brandName }: Relate
                         key={product.id}
                         product={product}
                         isPromoted={promotedIds.has(product.id)}
+                        returnTo={pathname}
                     />
                 ))}
             </div>

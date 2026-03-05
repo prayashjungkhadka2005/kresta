@@ -54,7 +54,6 @@ export function StatusSelect({
 
     const handleToggle = (e: React.MouseEvent) => {
         e.preventDefault();
-        e.stopPropagation();
         if (disabled || isLoading) return;
         updateCoords();
         setIsOpen(!isOpen);
@@ -78,7 +77,10 @@ export function StatusSelect({
     // Close on click outside
     useEffect(() => {
         if (!isOpen) return;
-        const handleClickOutside = () => setIsOpen(false);
+        const handleClickOutside = (e: MouseEvent) => {
+            if (triggerRef.current?.contains(e.target as Node)) return;
+            setIsOpen(false);
+        };
         window.addEventListener("click", handleClickOutside);
         return () => window.removeEventListener("click", handleClickOutside);
     }, [isOpen]);
