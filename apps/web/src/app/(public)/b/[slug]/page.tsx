@@ -18,11 +18,35 @@ import Image from "next/image";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 
+interface ProductMedia {
+    url: string;
+    order: number;
+}
+
+interface Product {
+    id: string;
+    name: string;
+    price: string;
+    commissionRate: number;
+    media: ProductMedia[];
+}
+
+interface BrandProfile {
+    companyName: string;
+    logoUrl?: string;
+    websiteUrl?: string;
+    instagramUrl?: string;
+    twitterUrl?: string;
+    linkedinUrl?: string;
+    bio?: string;
+    products: Product[];
+}
+
 export default function BrandProfilePage() {
     const params = useParams();
     const slug = params.slug as string;
 
-    const { data, isLoading, error } = useQuery({
+    const { data, isLoading, error } = useQuery<BrandProfile>({
         queryKey: ["public-brand-profile", slug],
         queryFn: async () => {
             const response = await api.get(`/brands/${slug}`);
@@ -59,24 +83,9 @@ export default function BrandProfilePage() {
     const products = brand.products || [];
 
     return (
-        <div className="min-h-screen bg-white dark:bg-black font-sans selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-500 pb-20">
-            {/* Banner Section */}
-            <div className="relative h-64 md:h-80 w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
-                {brand.bannerUrl ? (
-                    <Image
-                        src={brand.bannerUrl}
-                        alt={brand.companyName}
-                        fill
-                        className="object-cover opacity-80"
-                    />
-                ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-zinc-200 to-zinc-100 dark:from-zinc-800 dark:to-zinc-950" />
-                )}
-                <div className="absolute inset-0 bg-black/5" />
-            </div>
-
+        <div className="min-h-screen bg-white dark:bg-black font-sans selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-500 pb-20 pt-24">
             {/* Profile Header Section */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div className="flex flex-col md:flex-row gap-6 items-start md:items-end">
                         {/* Logo */}

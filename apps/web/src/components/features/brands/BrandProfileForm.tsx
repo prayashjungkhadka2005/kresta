@@ -13,7 +13,6 @@ interface BrandProfileFormData {
     companyName: string;
     bio: string;
     logoUrl: string;
-    bannerUrl: string;
     websiteUrl: string;
     instagramUrl: string;
     twitterUrl: string;
@@ -82,16 +81,6 @@ export function BrandProfileForm({
                                 value={formData.logoUrl}
                                 onChange={(url) => setFormData({ ...formData, logoUrl: url })}
                                 aspectRatio="square"
-                                disabled={isLoading}
-                            />
-                        </div>
-                        <div className="lg:col-span-2">
-                            <SingleImageUpload
-                                label="Storefront Banner"
-                                description="1200x400 recommended"
-                                value={formData.bannerUrl}
-                                onChange={(url) => setFormData({ ...formData, bannerUrl: url })}
-                                aspectRatio="banner"
                                 disabled={isLoading}
                             />
                         </div>
