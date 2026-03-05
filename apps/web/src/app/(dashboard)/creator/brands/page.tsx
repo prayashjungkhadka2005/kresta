@@ -101,48 +101,66 @@ export default function CreatorBrandsPage() {
                     </div>
                 ) : (
                     filteredBrands.map((brand) => (
-                        <div key={brand.id} className="group flex flex-col bg-white dark:bg-zinc-900/50 rounded-xl border border-gray-100 dark:border-zinc-800 transition-all duration-300 hover:border-gray-200 dark:hover:border-zinc-700 shadow-sm">
-                            <div className="p-5 flex flex-col h-full">
-                                {/* Header: Inline Logo and Info */}
-                                <div className="flex items-center gap-4 mb-5">
-                                    <div className="w-14 h-14 shrink-0 rounded-full bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 overflow-hidden flex items-center justify-center text-zinc-400">
+                        <div key={brand.id} className="group relative flex flex-col bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl overflow-hidden transition-all duration-300 shadow-sm">
+                            {/* Header: Banner & Logo */}
+                            <div className="relative h-32 w-full bg-gray-50 dark:bg-zinc-800 overflow-hidden">
+                                {brand.bannerUrl ? (
+                                    <Image src={brand.bannerUrl} alt="" fill className="object-cover" />
+                                ) : (
+                                    <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-900 opacity-50" />
+                                )}
+                                {/* Overlay Shadow */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+
+                                {/* Logo - Overlapping Banner */}
+                                <div className="absolute -bottom-6 left-6 z-10">
+                                    <div className="w-20 h-20 rounded-2xl bg-white dark:bg-zinc-900 border-4 border-white dark:border-zinc-900 shadow-xl overflow-hidden flex items-center justify-center">
                                         {brand.logoUrl ? (
-                                            <Image src={brand.logoUrl} alt={brand.companyName} width={56} height={56} className="object-cover w-full h-full" />
+                                            <Image src={brand.logoUrl} alt={brand.companyName} width={80} height={80} className="object-cover w-full h-full" />
                                         ) : (
-                                            <Store className="w-6 h-6" />
+                                            <Store className="w-8 h-8 text-zinc-300" />
                                         )}
                                     </div>
-                                    <div className="flex flex-col flex-1 min-w-0">
-                                        <h3 className="text-base font-bold text-gray-900 dark:text-white truncate">
-                                            {brand.companyName}
-                                        </h3>
-                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Content */}
+                            <div className="pt-12 p-6 flex flex-col flex-1">
+                                <div className="mb-6">
+                                    <h3 className="text-lg font-black text-gray-900 dark:text-white tracking-tight transition-colors">
+                                        {brand.companyName}
+                                    </h3>
+                                    {brand.bio && (
+                                        <p className="text-xs text-gray-500 dark:text-zinc-500 mt-1 line-clamp-1">
+                                            {brand.bio}
+                                        </p>
+                                    )}
                                 </div>
 
-                                <div className="mt-auto flex flex-col gap-4">
-                                    {/* Metrics */}
-                                    <div className="flex flex-wrap items-center gap-4">
-                                        <div className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-zinc-400">
-                                            <Package className="w-3.5 h-3.5 text-gray-400 dark:text-zinc-500" />
-                                            <span>{brand._count.products} Products</span>
+                                <div className="mt-auto space-y-5">
+                                    {/* Metrics Grid - Matching Product Page Style */}
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div className="bg-gray-50/50 dark:bg-zinc-800/30 border border-zinc-100 dark:border-zinc-800/50 p-2.5 rounded-xl text-center">
+                                            <p className="text-[9px] uppercase font-bold tracking-widest text-zinc-400 dark:text-zinc-500 mb-0.5">Products</p>
+                                            <p className="text-sm font-black text-gray-900 dark:text-white">{brand._count.products}</p>
                                         </div>
-                                        <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                                            <TrendingUp className="w-3.5 h-3.5" />
-                                            <span>15% Commission</span>
+                                        <div className="bg-emerald-50/30 dark:bg-emerald-900/10 border border-emerald-100/50 dark:border-emerald-800/30 p-2.5 rounded-xl text-center">
+                                            <p className="text-[9px] uppercase font-bold tracking-widest text-emerald-600 dark:text-emerald-400 mb-0.5">Commission</p>
+                                            <p className="text-sm font-black text-emerald-600 dark:text-emerald-400">15%</p>
                                         </div>
                                     </div>
 
-                                    {/* Buttons */}
-                                    <div className="flex gap-2">
-                                        <Link href={`/creator/brands/${brand.slug}`} className="flex-1">
-                                            <Button variant="outline" className="w-full h-9 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-transparent hover:bg-gray-50 dark:hover:bg-zinc-800">
-                                                Profile
+                                    {/* Action Buttons */}
+                                    <div className="flex items-center gap-2">
+                                        <Link href={`/creator/marketplace?q=${brand.companyName}`} className="flex-[2]">
+                                            <Button className="w-full h-10 rounded-xl text-[10px] font-bold uppercase tracking-widest gap-2 bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-100 shadow-lg shadow-zinc-200 dark:shadow-none">
+                                                Browse Items
+                                                <ArrowRight className="w-3.5 h-3.5" />
                                             </Button>
                                         </Link>
-                                        <Link href={`/creator/marketplace?q=${brand.companyName}`} className="flex-1">
-                                            <Button variant="default" className="w-full h-9 rounded-lg text-[10px] font-bold uppercase tracking-widest gap-2">
-                                                Browse
-                                                <ArrowRight className="w-3" />
+                                        <Link href={`/creator/brands/${brand.slug}`} className="flex-1">
+                                            <Button variant="outline" className="w-full h-10 rounded-xl text-[10px] font-bold uppercase tracking-widest border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                                                Profile
                                             </Button>
                                         </Link>
                                     </div>

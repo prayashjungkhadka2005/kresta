@@ -13,6 +13,7 @@ interface BrandProfileFormData {
     companyName: string;
     bio: string;
     logoUrl: string;
+    bannerUrl: string;
     websiteUrl: string;
     instagramUrl: string;
     twitterUrl: string;
@@ -73,14 +74,24 @@ export function BrandProfileForm({
                         <p className="text-pro-label text-gray-400 dark:text-zinc-500 font-bold uppercase tracking-widest mt-1">Logo and banner represent your brand across the platform.</p>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-1">
+                    <div className="flex flex-col sm:flex-row gap-8 items-start">
+                        <div className="w-full max-w-[160px]">
                             <SingleImageUpload
                                 label="Brand Logo"
-                                description="400x400 recommended"
+                                description="400x400"
                                 value={formData.logoUrl}
                                 onChange={(url) => setFormData({ ...formData, logoUrl: url })}
                                 aspectRatio="square"
+                                disabled={isLoading}
+                            />
+                        </div>
+                        <div className="w-full max-w-[400px]">
+                            <SingleImageUpload
+                                label="Brand Banner"
+                                description="High-resolution banner"
+                                value={formData.bannerUrl}
+                                onChange={(url) => setFormData({ ...formData, bannerUrl: url })}
+                                aspectRatio="video"
                                 disabled={isLoading}
                             />
                         </div>

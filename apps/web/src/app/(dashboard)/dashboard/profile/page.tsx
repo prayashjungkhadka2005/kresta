@@ -70,6 +70,7 @@ export default function BrandProfileSettingsPage() {
                     companyName: data?.companyName || "",
                     bio: data?.bio || "",
                     logoUrl: data?.logoUrl || "",
+                    bannerUrl: data?.bannerUrl || "",
                     websiteUrl: data?.websiteUrl || "",
                     instagramUrl: data?.instagramUrl || "",
                     twitterUrl: data?.twitterUrl || "",
