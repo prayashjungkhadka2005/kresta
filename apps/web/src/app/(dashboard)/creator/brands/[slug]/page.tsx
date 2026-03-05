@@ -44,6 +44,7 @@ interface BrandProfile {
     twitterUrl?: string;
     tiktokUrl?: string;
     linkedinUrl?: string;
+    avgCommission: number;
     products: Product[];
 }
 
@@ -77,6 +78,8 @@ export default function CreatorBrandDetailPage() {
     const filteredProducts = brand?.products.filter((p: Product) =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase())
     ) || [];
+
+    const avgCommission = brand?.avgCommission ?? 0;
 
     if (isLoading) {
         return (
@@ -188,13 +191,13 @@ export default function CreatorBrandDetailPage() {
 
                         {/* Metrics Grid — Matching Product Detail Style */}
                         <div className="grid grid-cols-2 gap-3 w-full lg:w-80 shrink-0">
-                            <div className="bg-gray-50/50 dark:bg-zinc-800/30 border border-zinc-200/50 dark:border-zinc-800/50 p-4 rounded-xl">
+                            <div className="bg-gray-50/50 dark:bg-zinc-800/30 border border-zinc-200/50 dark:border-zinc-800/50 p-4 rounded-xl text-center md:text-left">
                                 <p className="text-[10px] uppercase font-bold tracking-widest text-zinc-400 dark:text-zinc-500 mb-1">Products</p>
                                 <p className="text-xl font-black text-gray-900 dark:text-white">{brand.products.length}</p>
                             </div>
-                            <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30 p-4 rounded-xl">
-                                <p className="text-[10px] uppercase font-bold tracking-widest text-emerald-600 dark:text-emerald-400 mb-1">Max Commission</p>
-                                <p className="text-xl font-black text-emerald-700 dark:text-emerald-300">15%</p>
+                            <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30 p-4 rounded-xl text-center md:text-left">
+                                <p className="text-[10px] uppercase font-bold tracking-widest text-emerald-600 dark:text-emerald-400 mb-1">Avg. Commission</p>
+                                <p className="text-xl font-black text-emerald-700 dark:text-emerald-300">{avgCommission}%</p>
                             </div>
                         </div>
                     </div>

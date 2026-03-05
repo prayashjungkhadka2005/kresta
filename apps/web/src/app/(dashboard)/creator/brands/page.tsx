@@ -17,6 +17,7 @@ interface Brand {
     logoUrl?: string;
     bannerUrl?: string;
     bio?: string;
+    avgCommission: number;
     _count: {
         products: number;
     };
@@ -114,7 +115,7 @@ export default function CreatorBrandsPage() {
 
                                 {/* Logo - Overlapping Banner */}
                                 <div className="absolute -bottom-6 left-6 z-10">
-                                    <div className="w-20 h-20 rounded-2xl bg-white dark:bg-zinc-900 border-4 border-white dark:border-zinc-900 shadow-xl overflow-hidden flex items-center justify-center">
+                                    <div className="w-20 h-20 rounded-xl bg-white dark:bg-zinc-900 border-4 border-white dark:border-zinc-900 shadow-xl overflow-hidden flex items-center justify-center">
                                         {brand.logoUrl ? (
                                             <Image src={brand.logoUrl} alt={brand.companyName} width={80} height={80} className="object-cover w-full h-full" />
                                         ) : (
@@ -145,8 +146,8 @@ export default function CreatorBrandsPage() {
                                             <p className="text-sm font-black text-gray-900 dark:text-white">{brand._count.products}</p>
                                         </div>
                                         <div className="bg-emerald-50/30 dark:bg-emerald-900/10 border border-emerald-100/50 dark:border-emerald-800/30 p-2.5 rounded-xl text-center">
-                                            <p className="text-[9px] uppercase font-bold tracking-widest text-emerald-600 dark:text-emerald-400 mb-0.5">Commission</p>
-                                            <p className="text-sm font-black text-emerald-600 dark:text-emerald-400">15%</p>
+                                            <p className="text-[9px] uppercase font-bold tracking-widest text-emerald-600 dark:text-emerald-400 mb-0.5">Avg. Commission</p>
+                                            <p className="text-sm font-black text-emerald-600 dark:text-emerald-400">{brand.avgCommission}%</p>
                                         </div>
                                     </div>
 

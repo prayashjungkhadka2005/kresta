@@ -2,7 +2,7 @@ import { prisma, Brand } from "db";
 
 export class BrandService {
     async getAllBrands() {
-        return prisma.brand.findMany({
+        const brands = await prisma.brand.findMany({
             where: {
                 status: "APPROVED",
                 products: {
@@ -19,6 +19,15 @@ export class BrandService {
                 logoUrl: true,
                 bannerUrl: true,
                 bio: true,
+                products: {
+                    where: {
+                        status: "ACTIVE",
+                        approvalStatus: "APPROVED"
+                    },
+                    select: {
+                        commissionRate: true
+                    }
+                },
                 _count: {
                     select: {
                         products: {
@@ -34,10 +43,24 @@ export class BrandService {
                 companyName: "asc"
             }
         });
+
+        return brands.map(brand => {
+            const totalCommission = brand.products.reduce((acc, p) => acc + Number(p.commissionRate || 0), 0);
+            const avgCommission = brand.products.length > 0
+                ? parseFloat((totalCommission / brand.products.length).toFixed(2))
+                : 0;
+
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { products, ...rest } = brand;
+            return {
+                ...rest,
+                avgCommission
+            };
+        });
     }
 
     async getBrandBySlug(slug: string) {
-        return prisma.brand.findUnique({
+        const brand = await prisma.brand.findUnique({
             where: { slug },
             select: {
                 id: true,
@@ -64,6 +87,18 @@ export class BrandService {
                 }
             }
         });
+
+        if (!brand) return null;
+
+        const totalCommission = brand.products.reduce((acc, p) => acc + Number(p.commissionRate || 0), 0);
+        const avgCommission = brand.products.length > 0
+            ? parseFloat((totalCommission / brand.products.length).toFixed(2))
+            : 0;
+
+        return {
+            ...brand,
+            avgCommission
+        };
     }
 
     async getBrandById(id: string) {
