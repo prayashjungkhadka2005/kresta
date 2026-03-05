@@ -4,11 +4,21 @@ import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
-import { ShoppingCart, Share2, ShieldCheck, ChevronLeft, ChevronRight, Play, ExternalLink, Package } from "lucide-react";
+import {
+    ShoppingCart,
+    Share2,
+    ShieldCheck,
+    ChevronLeft,
+    ChevronRight,
+    Play,
+    ExternalLink,
+    Package
+} from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 
 export default function PublicProductPage() {
     const params = useParams();
@@ -54,7 +64,7 @@ export default function PublicProductPage() {
             <div className="sticky top-0 z-50 w-full bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-zinc-100 dark:border-zinc-900 px-6 py-4 transition-colors duration-500">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-black dark:bg-white flex items-center justify-center shadow-lg transition-transform hover:scale-105">
+                        <div className="w-8 h-8 rounded-lg bg-black dark:bg-white flex items-center justify-center shadow-lg transition-transform hover:scale-105 cursor-pointer" onClick={() => window.location.href = "/"}>
                             <span className="text-white dark:text-black font-black text-sm italic">K</span>
                         </div>
                         <span className="text-[11px] font-black uppercase tracking-[0.3em] text-zinc-900 dark:text-white">Kresta</span>
@@ -72,7 +82,7 @@ export default function PublicProductPage() {
 
                     {/* Media Gallery Section */}
                     <div className="space-y-6">
-                        <div className="relative aspect-[4/5] rounded-3xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 group shadow-2xl transition-all duration-700">
+                        <div className="relative aspect-[4/5] rounded-3xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 group shadow-2xl transition-all duration-700 border border-zinc-100 dark:border-zinc-900">
                             {activeMedia?.type === "IMAGE" ? (
                                 <Image
                                     src={activeMedia.url}
@@ -131,11 +141,23 @@ export default function PublicProductPage() {
 
                     {/* Content Section */}
                     <div className="flex flex-col">
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                                <span className="inline-block h-[1px] w-8 bg-zinc-300 dark:bg-zinc-700" />
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-4">
+                                <Link href={`/b/${product.brand.slug}`} className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 px-4 py-2 rounded-2xl hover:bg-white dark:hover:bg-zinc-800 transition-all hover:shadow-xl group">
+                                    <div className="w-8 h-8 rounded-full overflow-hidden bg-white dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-800 flex items-center justify-center">
+                                        {product.brand.logoUrl ? (
+                                            <Image src={product.brand.logoUrl} alt={product.brand.companyName} width={32} height={32} />
+                                        ) : (
+                                            <span className="text-[10px] font-black italic">{product.brand.companyName.charAt(0)}</span>
+                                        )}
+                                    </div>
+                                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-900 dark:text-white group-hover:text-black dark:group-hover:text-white transition-colors">
+                                        {product.brand.companyName}
+                                    </span>
+                                </Link>
                                 <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400">Official Product</span>
                             </div>
+
                             <h1 className="text-4xl lg:text-6xl font-black tracking-tight text-zinc-900 dark:text-white leading-[1.1]">
                                 {product.name}
                             </h1>

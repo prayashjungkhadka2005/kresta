@@ -20,6 +20,7 @@ interface Product {
     brand: {
         companyName: string;
         logoUrl?: string;
+        slug: string;
     };
 }
 
@@ -167,9 +168,11 @@ export default function CreatorMarketplacePage() {
                             {/* Content Area */}
                             <div className="p-4 flex-1 flex flex-col">
                                 <div className="flex items-center mb-2">
-                                    <span className="text-[10px] uppercase font-bold tracking-widest text-gray-500 dark:text-zinc-400 bg-gray-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-md border border-gray-200 dark:border-zinc-700/50 truncate max-w-full">
-                                        {product.brand.companyName}
-                                    </span>
+                                    <Link href={`/b/${product.brand.slug}`} className="hover:opacity-80 transition-opacity max-w-full">
+                                        <span className="text-[10px] uppercase font-bold tracking-widest text-gray-500 dark:text-zinc-400 bg-gray-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-md border border-gray-200 dark:border-zinc-700/50 truncate block">
+                                            {product.brand.companyName}
+                                        </span>
+                                    </Link>
                                 </div>
                                 <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2 leading-tight truncate">
                                     {product.name}

@@ -5,11 +5,22 @@ import { BrandRegisterInput, CreatorRegisterInput } from "shared";
 export class AuthService {
     async registerBrand(data: BrandRegisterInput): Promise<Brand> {
         const hashedPassword = await bcrypt.hash(data.password, 10);
+
+        // Generate a basic slug: company name lowercase, no special chars, plus a random suffix for uniqueness
+        const baseSlug = data.companyName
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "-")
+            .replace(/-+/g, "-")
+            .replace(/^-|-$/g, "");
+
+        const slug = `${baseSlug}-${Math.random().toString(36).substring(2, 6)}`;
+
         return prisma.brand.create({
             data: {
                 email: data.email,
                 passwordHash: hashedPassword,
                 companyName: data.companyName,
+                slug: slug,
                 websiteUrl: data.websiteUrl || null,
                 hasWebsite: data.hasWebsite,
             },
