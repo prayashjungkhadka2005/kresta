@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/Button";
 import { Search } from "@/components/ui/Search";
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { navigationStore, useNavigationContext } from "@/lib/navigation";
 
 interface Brand {
     id: string;
@@ -24,7 +26,15 @@ interface Brand {
 }
 
 export default function CreatorBrandsPage() {
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
     const [searchQuery, setSearchQuery] = useState("");
+
+    // Industry standard navigation context management
+    useNavigationContext("brands", {
+        label: "Brands",
+        basePath: "/creator/brands"
+    });
 
     const { data: brands = [], isLoading } = useQuery<Brand[]>({
         queryKey: ["partner-brands"],

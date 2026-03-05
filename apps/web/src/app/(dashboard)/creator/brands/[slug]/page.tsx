@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import {
@@ -21,10 +21,11 @@ import {
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { Search } from "@/components/ui/Search";
 import { ProductCard } from "@/components/features/products/ProductCard";
 import { BackButton } from "@/components/shared/ui/BackButton";
+import { navigationStore, useNavigationContext } from "@/lib/navigation";
 
 interface Product {
     id: string;
@@ -52,6 +53,7 @@ interface BrandProfile {
 
 export default function CreatorBrandDetailPage() {
     const params = useParams();
+    const searchParams = useSearchParams();
     const slug = params.slug as string;
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -63,6 +65,13 @@ export default function CreatorBrandDetailPage() {
         },
         enabled: !!slug,
     });
+
+    // Industry standard navigation context management
+    // We save under 'brand' context so it doesn't collide with 'brands' (directory)
+    useNavigationContext("brand", {
+        label: brand?.companyName || "Brand",
+        basePath: "/creator/brands"
+    }, "full");
 
     // Fetch Creator Links to check promoted status
     const { data: promotedIds = new Set<string>() } = useQuery<Set<string>>({
@@ -125,7 +134,6 @@ export default function CreatorBrandDetailPage() {
             <div className="flex items-center justify-between">
                 <BackButton
                     fallbackHref="/creator/brands"
-                    label="Directory"
                 />
             </div>
 
@@ -263,7 +271,6 @@ export default function CreatorBrandDetailPage() {
                                     }
                                 }}
                                 isPromoted={promotedIds.has(product.id)}
-                                returnTo={`/creator/brands/${brand.slug}`}
                             />
                         ))}
                     </div>

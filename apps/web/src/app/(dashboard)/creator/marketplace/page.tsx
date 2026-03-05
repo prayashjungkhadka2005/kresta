@@ -9,6 +9,7 @@ import Link from "next/link";
 import { ProductCard } from "@/components/features/products/ProductCard";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { navigationStore, useNavigationContext } from "@/lib/navigation";
 
 interface Product {
     id: string;
@@ -32,6 +33,12 @@ export default function CreatorMarketplacePage() {
     // Get search and tab from URL
     const searchQuery = searchParams.get("q") || "";
     const activeTab = searchParams.get("tab") || "ALL";
+
+    // Industry standard navigation context management
+    useNavigationContext("marketplace", {
+        label: "Marketplace",
+        basePath: "/creator/marketplace"
+    });
 
     const handleTabChange = (tab: string) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -167,7 +174,6 @@ export default function CreatorMarketplacePage() {
                             key={product.id}
                             product={product}
                             isPromoted={promotedIds.has(product.id)}
-                            returnTo={`${pathname}?${searchParams.toString()}`}
                         />
                     ))}
                 </div>

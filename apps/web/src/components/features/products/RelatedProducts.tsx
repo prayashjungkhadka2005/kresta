@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { ProductCard } from "./ProductCard";
 import { ShoppingBag } from "lucide-react";
 
-import { usePathname } from "next/navigation";
+// No longer need manual path or context imports due to new Stack Architecture
 
 interface RelatedProductsProps {
     currentProductId: string;
@@ -15,7 +15,7 @@ interface RelatedProductsProps {
 }
 
 export const RelatedProducts = ({ currentProductId, brandId, brandName }: RelatedProductsProps) => {
-    const pathname = usePathname();
+    // Stack architecture handles context automatically
     const { data: allProducts = [], isLoading } = useQuery({
         queryKey: ["marketplace-products-discovery"],
         queryFn: async () => {
@@ -62,6 +62,7 @@ export const RelatedProducts = ({ currentProductId, brandId, brandName }: Relate
     const displayProducts = hasBrandProducts ? brandProducts.slice(0, 4) : otherProducts.slice(0, 4);
     const title = hasBrandProducts ? `More from ${brandName}` : "Discover More Campaigns";
 
+
     if (displayProducts.length === 0) return null;
 
     return (
@@ -81,7 +82,6 @@ export const RelatedProducts = ({ currentProductId, brandId, brandName }: Relate
                         key={product.id}
                         product={product}
                         isPromoted={promotedIds.has(product.id)}
-                        returnTo={pathname}
                     />
                 ))}
             </div>

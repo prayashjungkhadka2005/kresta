@@ -26,14 +26,11 @@ interface Product {
 interface ProductCardProps {
     product: Product;
     isPromoted?: boolean;
-    returnTo?: string;
 }
 
-export const ProductCard = ({ product, isPromoted, returnTo }: ProductCardProps) => {
-    // Construct the detail URL with context if provided
-    const detailUrl = returnTo
-        ? `/creator/marketplace/${product.id}?from=${encodeURIComponent(returnTo)}`
-        : `/creator/marketplace/${product.id}`;
+export const ProductCard = ({ product, isPromoted }: ProductCardProps) => {
+    // We now use the Navigation Stack architecture, so URLs are clean
+    const detailUrl = `/creator/marketplace/${product.id}`;
 
     return (
         <div className="group flex flex-col bg-white dark:bg-zinc-900/50 rounded-xl border border-gray-100 dark:border-zinc-800 overflow-hidden transition-all duration-300 hover:border-gray-200 dark:hover:border-zinc-700 shadow-sm h-full">

@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { BackButton } from "@/components/shared/ui/BackButton";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, usePathname, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { RelatedProducts } from "@/components/features/products/RelatedProducts";
+import { useEffect } from "react";
+import { navigationStore, useNavigationContext } from "@/lib/navigation";
 
 interface Product {
     id: string;
@@ -97,11 +99,19 @@ const VideoPlayer = ({ src }: { src: string }) => {
 export default function MarketplaceProductDetailPage() {
     const params = useParams();
     const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
     const productId = params.id as string;
     const queryClient = useQueryClient();
 
     const [copied, setCopied] = useState(false);
     const [selectedImage, setSelectedImage] = useState(0);
+
+    // Industry standard navigation context management
+    useNavigationContext("product", {
+        label: "Product",
+        basePath: "/creator/marketplace"
+    }, "full");
 
     // Fetch Product Data
     const { data: product, isLoading: isLoadingProduct, error: productError } = useQuery<Product>({
